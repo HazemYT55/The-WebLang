@@ -56,6 +56,9 @@
   <button class="tab on" data-f="btw">page.btw</button>
   <button class="tab" data-f="stw">web.stw</button>
   <button class="tab" data-f="mtwc">web.mtwc</button>
+  <button class="tab" id="open-files">Open files…</button>
+  <input type="file" id="file-input" accept=".btw,.stw,.mtwc" multiple hidden>
+  <label class="tab" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="auto-convert" checked style="margin:0;display:inline-block;width:auto"> Auto-convert</label>
   <button class="tab" id="convert">Convert to HTML / CSS / JS</button>
   <button class="run" id="run">▶ Run</button>
 </div>
@@ -75,11 +78,11 @@ row {
   card { t.2 "Simple" }
   card { t.2 "Fun" }
 }</textarea>
-    <textarea id="ed-stw" style="display:none" spellcheck="false">body([t.a:center],[f.fa:Arial],[c:#1a1d2e],[b.col:#f4f6ff])
+    <textarea id="ed-stw" style="display:none" spellcheck="false">body([t.a:center],[f.f:Arial],[c:#1a1d2e],[bg:#f4f6ff])
 
-btn([b.co:#7c5cff],[c:white],[p:12px],[b.ra:8px])
+btn([bg:#7c5cff],[c:white],[p:12px],[b.r:8px])
 
-card([b.col:white],[b.ra:12px],[p:16px],[b.sha:0 4px 14px rgba(0,0,0,0.08)])</textarea>
+card([bg:white],[b.r:12px],[p:16px],[sh:0 4px 14px rgba(0,0,0,0.08)])</textarea>
     <textarea id="ed-mtwc" style="display:none" spellcheck="false">btn.id = 2 , connect to 'page.btw':
 
 action(Dark)
@@ -98,12 +101,13 @@ action(Dark)
 </div>
 <section id="exports" hidden aria-label="Converted files">
   <div class="toolbar"><strong>Converted files</strong><button class="tab" id="close-export">Back to editor</button></div>
-  <p class="export-note">Experimental subset. Check compiler warnings below. Download all three files into the same folder, then open the exported index.html. These outputs are separate from this IDE site.</p>
+  <p class="export-note">Experimental subset. Check compiler warnings below. Download all three files into the same folder, then open the exported index.html. These outputs are separate from this IDE site. Links to .btw pages become .html links: convert each page and save it under that name (for example page2.html).</p>
   <div class="toolbar" id="output-tabs">
     <button class="tab on" data-output="index.html">index.html</button>
     <button class="tab" data-output="style.css">style.css</button>
     <button class="tab" data-output="script.js">script.js</button>
     <button class="tab" id="download-output">Download index.html</button>
+    <button class="tab" id="download-all">Download all 3 files</button>
   </div>
   <textarea id="output-code" readonly spellcheck="false" aria-label="Converted source code"></textarea>
 </section>
@@ -117,6 +121,69 @@ action(Dark)
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+
+function pageHref(u){return String(u).replace(/\.btw(?=($|[#?]))/,'.html');}
+function isExternal(u){return /^(https?:)?\/\//i.test(u)||/^(mailto|tel):/i.test(u);}
+function flagsOf(str){
+  var f={}, mm, re=/\[([a-z]+)(?::("[^"]*"|[^\]]*))?\]/g;
+  while((mm=re.exec(str))){ f[mm[1]]=(mm[2]===undefined?true:mm[2].replace(/^"|"$/g,'')); }
+  return f;
+}
+function mediaAttrs(f, kind){
+  var a='';
+  if(f.autoplay) a+=' autoplay';
+  if(f.mute||f.muted) a+=' muted';
+  if(f.loop) a+=' loop';
+  if(f.poster && kind==='vid') a+=' poster="'+esc(f.poster)+'"';
+  if(f.volume!==undefined && f.volume!==true){ var v=parseFloat(f.volume); if(!isNaN(v)) a+=' onloadedmetadata="this.volume='+Math.max(0,Math.min(1,v))+'"'; }
+  return a;
+}
+function sizeStyle(f){
+  var st='max-width:100%';
+  if(f.w) st+=';width:'+esc(/^\d+$/.test(f.w)?f.w+'px':f.w);
+  if(f.h) st+=';height:'+esc(/^\d+$/.test(f.h)?f.h+'px':f.h);
+  return st;
+}
+function findClose(t, open){ // index of } matching the { at open; quotes skipped
+  var d=0, q=false;
+  for(var i=open;i<t.length;i++){
+    var c=t[i];
+    if(c==='"') q=!q;
+    if(q) continue;
+    if(c==='{') d++;
+    else if(c==='}'){ d--; if(d===0) return i; }
+  }
+  return -1;
+}
+function expandComponents(src, warnings){
+  var defs={}, text=src, m, re=/(^|[\s}])define\s+(\w+)\s*\{/;
+  while((m=re.exec(text))){
+    var open=m.index+m[0].length-1, close=findClose(text,open);
+    if(close<0){ warnings.push('BTW: define '+m[2]+' is missing a closing }'); break; }
+    defs[m[2]]=text.slice(open+1,close);
+    text=text.slice(0,m.index+m[1].length)+text.slice(close+1);
+  }
+  var useRe=/(^|[\s{}])use\s+(\w+)\s*\{/;
+  for(var guard=0; guard<200 && (m=useRe.exec(text)); guard++){
+    var o=m.index+m[0].length-1, c=findClose(text,o);
+    if(c<0){ warnings.push('BTW: use '+m[2]+' is missing a closing }'); break; }
+    var content=text.slice(o+1,c), name=m[2], props={}, pm, pre=/prop\s+(\w+)\s+"((?:[^"\\]|\\.)*)"/g;
+    while((pm=pre.exec(content))) props[pm[1]]=pm[2];
+    var slot=content.replace(/prop\s+\w+\s+"(?:[^"\\]|\\.)*"/g,'').trim();
+    var rep='';
+    if(!defs.hasOwnProperty(name)){ warnings.push('BTW: component "'+name+'" is not defined · skipped'); }
+    else {
+      rep=defs[name].replace(/(:\s*)?\bprop\s+(\w+)/g,function(all,colon,key){
+        if(!props.hasOwnProperty(key)){ warnings.push('BTW: component "'+name+'" has no value for prop "'+key+'"'); return colon?colon:'""'; }
+        return colon ? colon+props[key] : '"'+props[key]+'"';
+      }).replace(/^[ \t]*slot[ \t]*$/mg, slot);
+    }
+    text=text.slice(0,m.index+m[1].length)+'\n'+rep+'\n'+text.slice(c+1);
+  }
+  if(/(^|[\s{}])use\s+\w+\s*\{/.test(text)) warnings.push('BTW: components nest too deeply · some use blocks skipped');
+  return text;
+}
+
 // ---------- BTW -> HTML ----------
 var BTW_CONTAINERS = {box:'div', row:'div', col:'div', grid:'div', card:'div',
   header:'header', footer:'footer', nav:'nav', section:'section', aside:'aside',
@@ -127,7 +194,7 @@ var BTW_CONTAINER_CLASS = {box:'wl-box', row:'wl-row', col:'wl-col', grid:'wl-gr
   section:'wl-section', aside:'wl-aside', center:'wl-center', form:'wl-form'};
 
 function compileBTW(src, warnings){
-  var lines = src.split(/\r?\n/);
+  var lines = expandComponents(src, warnings).split(/\r?\n/);
   var out = [], stack = [], title = null, themeInit = null;
 
   function attrs(idAttr, clsAttr, tag){
@@ -159,13 +226,14 @@ function compileBTW(src, warnings){
         return {id:id, cls:cls};
       }
       // containers with brace
-      if((m = s.match(/^([a-z][\w.]*)\s*(?=\{)/)) && BTW_CONTAINERS[m[1]]){
+      if((m = s.match(/^([a-z][\w.]*)\s*((?:\[[^\]]*\]\s*)*)(?=\{)/)) && BTW_CONTAINERS[m[1]]){
         var tag = m[1];
         var htmlTag = BTW_CONTAINERS[tag];
         var clsName = BTW_CONTAINER_CLASS[tag] || ('wl-'+tag);
-        out.push('<'+htmlTag+' class="'+clsName+'" data-wltag="'+tag+'">');
+        var cat = takeAttrs(m[2]);
+        out.push('<'+htmlTag+' class="'+clsName+(cat.cls?' '+esc(cat.cls):'')+'" data-wltag="'+tag+'"'+(cat.id?' data-wlid="'+esc(cat.id)+'"':'')+'>');
         stack.push('</'+htmlTag+'>');
-        s = s.slice(m[1].length).trim(); continue;
+        s = s.slice(m[0].length).trim(); continue;
       }
       if((m = s.match(/^title\s*:\s*(.*)$/))){
         title = m[1].trim(); s=''; continue;
@@ -197,14 +265,14 @@ function compileBTW(src, warnings){
         var at2 = takeAttrs(brest);
         var lm = brest.match(/->\s*(\S+)/);
         var a3 = attrs(at2.id, at2.cls, 'btn');
-        if(kind === '.link' && lm){ out.push('<a class="wl-btn" href="'+esc(lm[1])+'"'+a3+'>'+esc(btext)+'</a>'); }
+        if(kind === '.link' && lm){ out.push('<a class="wl-btn" href="'+esc(pageHref(lm[1]))+'"'+a3+'>'+esc(btext)+'</a>'); }
         else if(kind === '.disabled'){ out.push('<button class="wl-btn" disabled'+a3+'>'+esc(btext)+'</button>'); }
         else { out.push('<button class="wl-btn"'+a3+'>'+esc(btext)+'</button>'); }
         s = brest.replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').replace(/->\s*\S+/,'').trim(); continue;
       }
       if((m = s.match(/^a\s*"([^"]*)"\s*->\s*(\S+)(.*)$/))){
         var at3 = takeAttrs(m[3]);
-        out.push('<a href="'+esc(m[2])+'" target="_blank"'+attrs(at3.id,at3.cls,'a')+'>'+esc(m[1])+'</a>');
+        out.push('<a href="'+esc(pageHref(m[2]))+'"'+(isExternal(m[2])?' target="_blank" rel="noopener"':'')+attrs(at3.id,at3.cls,'a')+'>'+esc(m[1])+'</a>');
         s = m[3].replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').trim(); continue;
       }
       if((m = s.match(/^email\s*"([^"]*)"(.*)$/))){
@@ -217,16 +285,19 @@ function compileBTW(src, warnings){
       }
       if((m = s.match(/^anchor\s+(#\S+)(.*)$/))){ s = m[2].trim(); continue; }
       if((m = s.match(/^(img|gif|svg|avatar)\s*:\s*(\S+)(.*)$/))){
-        out.push('<img src="'+esc(m[2])+'" alt="" style="max-width:100%"'+attrs(null,null,m[1])+'>');
-        s = m[3].trim(); continue;
+        var imf = flagsOf(m[3]);
+        out.push('<img src="'+esc(m[2])+'" alt="'+esc(imf.alt||'')+'" style="'+sizeStyle(imf)+'"'+attrs(imf.id||null,imf['class']||null,m[1])+'>');
+        s = m[3].replace(/\[[^\]]*\]/g,'').trim(); continue;
       }
       if((m = s.match(/^vid\s*:\s*(\S+)(.*)$/))){
-        out.push('<video src="'+esc(m[1])+'" controls style="max-width:100%" data-wltag="vid"></video>');
-        s = m[2].trim(); continue;
+        var vf = flagsOf(m[2]);
+        out.push('<video src="'+esc(m[1])+'" controls playsinline style="'+sizeStyle(vf)+'"'+mediaAttrs(vf,'vid')+attrs(vf.id||null,vf['class']||null,'vid')+'></video>');
+        s = m[2].replace(/\[[^\]]*\]/g,'').trim(); continue;
       }
       if((m = s.match(/^mus\s*:\s*(\S+)(.*)$/))){
-        out.push('<audio src="'+esc(m[1])+'" controls data-wltag="mus"></audio>');
-        s = m[2].trim(); continue;
+        var af = flagsOf(m[2]);
+        out.push('<audio src="'+esc(m[1])+'" controls'+mediaAttrs(af,'mus')+attrs(af.id||null,af['class']||null,'mus')+'></audio>');
+        s = m[2].replace(/\[[^\]]*\]/g,'').trim(); continue;
       }
       if((m = s.match(/^iframe\s*:\s*(\S+)(.*)$/))){
         out.push('<iframe src="'+esc(m[1])+'" style="width:100%;min-height:300px;border:1px solid #ccc;border-radius:8px" data-wltag="iframe"></iframe>');
@@ -326,6 +397,24 @@ var STW_PROPS = {
   'z.i':'z-index','z.in':'z-index','z.ind':'z-index',
   'pos':'position','bg.co':'background-color','bd.co':'border-color'
 };
+// One official shortcode per property (WebLang v1.1). Older aliases still compile but warn.
+var STW_OFFICIAL = {
+  'c':'color','bg':'background-color','bg.i':'background-image','bd':'border-color','o':'opacity',
+  'f.f':'font-family','f.si':'font-size','f.st':'font-style','f.w':'font-weight',
+  't.a':'text-align','t.d':'text-decoration','t.t':'text-transform','l.h':'line-height','l.s':'letter-spacing',
+  'm':'margin','m.t':'margin-top','m.b':'margin-bottom','m.l':'margin-left','m.r':'margin-right',
+  'p':'padding','p.t':'padding-top','p.b':'padding-bottom','p.l':'padding-left','p.r':'padding-right','g':'gap',
+  'w':'width','h':'height','mw':'min-width','xw':'max-width','mh':'min-height','xh':'max-height',
+  'b':'border','b.w':'border-width','b.st':'border-style','b.r':'border-radius','sh':'box-shadow',
+  'd':'display','pos':'position','t':'top','bo':'bottom','le':'left','ri':'right','z':'z-index',
+  'fl.d':'flex-direction','j.c':'justify-content','a.i':'align-items','ov':'overflow',
+  'tr':'transition','tf':'transform','cu':'cursor'
+};
+Object.keys(STW_OFFICIAL).forEach(function(k){ STW_PROPS[k]=STW_OFFICIAL[k]; });
+function stwSuggest(prop){
+  for(var k in STW_OFFICIAL){ if(STW_OFFICIAL[k]===prop) return k; }
+  return null;
+}
 var STW_SELECTORS = {
   body:'body', btn:'.wl-btn', card:'.wl-card', box:'.wl-box', row:'.wl-row',
   col:'.wl-col', grid:'.wl-grid', center:'.wl-center', badge:'.wl-badge',
@@ -346,8 +435,10 @@ function compileSTW(src, warnings){
     var decls = [];
     var re = /\[([^\]:]+):([^\]]*)\]/g, mm;
     while((mm = re.exec(body))){
-      var prop = STW_PROPS[mm[1].trim()];
-      if(!prop){ warnings.push('STW: unknown property "'+mm[1]+'" · skipped'); continue; }
+      var key = mm[1].trim();
+      var prop = STW_PROPS[key];
+      if(!prop){ warnings.push('STW: unknown property "'+key+'" · skipped'); continue; }
+      if(!STW_OFFICIAL.hasOwnProperty(key)){ warnings.push('STW: "'+key+'" is an old shortcode for '+prop+' · use "'+stwSuggest(prop)+'"'); }
       var val = mm[2].trim();
       if(prop==='background-image' && !/^url\(/.test(val)) val = 'url('+val+')';
       decls.push(prop+':'+val);
@@ -377,7 +468,7 @@ function compileMTWC(src, warnings){
     if((m = t.match(/^var\s+(\w+)\s*=\s*(.+)$/))){ vars.push({name:m[1], expr:m[2]}); return; }
     if((m = t.match(/^([\w.]+)\.id\s*=\s*(\w+)$/))){ pendingId = m[2]; return; }
     if((m = t.match(/^action\((\w+)\)\s*$/))){ cur = {name:m[1], id:pendingId, event:null, tag:null, body:[]}; actions.push(cur); return; }
-    if((m = t.match(/^(inclick|inload|inhover|inleave|intype|insubmit|inscroll|inkey)\s+([\w.]+)\s*:\s*$/))){
+    if((m = t.match(/^(inclick|inload|inhover|inleave|intype|insubmit|inscroll|inkey|inchange)\s+([\w.]+)\s*:\s*$/))){
       if(cur){ cur.event = m[1]; cur.tag = m[2]; ev = cur; }
       return;
     }
@@ -385,8 +476,12 @@ function compileMTWC(src, warnings){
     warnings.push('MTWC: could not place line "'+t.slice(0,40)+'" · skipped');
   });
 
+  function getRef(e){
+    return e.replace(/\bget\s+input\.(\w+)/g,'wlGet("$1")').replace(/\bget\s+form\.(\w+)/g,'wlGetForm("$1")');
+  }
+  function pg(u){ return pageHref(u); }
   function expr(e){
-    e = e.trim();
+    e = getRef(e.trim());
     e = e.replace(/random\(\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/g,
       '(Math.floor(Math.random()*($2-$1+1))+$1)');
     e = e.replace(/\((\w+)\)/g, 'S.$1');
@@ -395,7 +490,7 @@ function compileMTWC(src, warnings){
     return e;
   }
   function cond(c){
-    c = c.trim().replace(/:$/,'');
+    c = getRef(c.trim().replace(/:$/,''));
     c = c.replace(/\band\b/g,'&&').replace(/\bor\b/g,'||');
     c = c.replace(/\bnot\b/g,'!');
     c = c.replace(/\((\w+)\)/g,'S.$1');
@@ -404,7 +499,7 @@ function compileMTWC(src, warnings){
   }
   function interp(str){
     // "Count: (count)" -> "Count: "+S.count+"
-    return '"'+str.replace(/"/g,'\\"').replace(/\((\w+)\)/g,'"+S.$1+"')+'"';
+    return '"'+str.replace(/"/g,'\\"').replace(/\{get input\.(\w+)\}/g,'"+wlGet("$1")+"').replace(/\{get form\.(\w+)\}/g,'"+wlGetForm("$1")+"').replace(/\((\w+)\)/g,'"+S.$1+"')+'"';
   }
   function selFor(tag, id){
     if(id) return "document.querySelector('[data-wlid=\""+id+"\"]')";
@@ -456,7 +551,15 @@ function compileMTWC(src, warnings){
       if((m = t.match(/^class\s+(add|remove)\s+([\w.]+)\s+"([^"]*)"$/))){
         js.push(eachSel(m[2])+'.forEach(function(el){el.classList.'+(m[1]==='add'?'add':'remove')+'("'+m[3]+'");});'); return;
       }
-      if((m = t.match(/^run\((\w+)\)$/))){ js.push('ACTIONS.'+m[1]+' && ACTIONS.'+m[1]+'();'); return; }
+      if((m = t.match(/^clear\s+input\.(\w+)$/))){ js.push('wlClear("'+m[1]+'");'); return; }
+      if((m = t.match(/^clear\s+form\.(\w+)$/))){ js.push('wlClear("'+m[1]+'");'); return; }
+      if((m = t.match(/^save\s+(\w+)(?:\s+to\s+'([^']*)')?$/))){ js.push('wlSave("'+(m[2]||'').replace(/\.\w+$/,'')+'","'+m[1]+'",S.'+m[1]+');'); return; }
+      if((m = t.match(/^load\s+(\w+)(?:\s+from\s+'([^']*)')?$/))){ js.push('S.'+m[1]+' = wlLoad("'+(m[2]||'').replace(/\\.\\w+$/,'')+'","'+m[1]+'",S.'+m[1]+');'); return; }
+      if((m = t.match(/^go\s+'([^']*)'$/))){ js.push('wlGo('+JSON.stringify(pg(m[1]))+');'); return; }
+      if(t === 'back'){ js.push('history.back();'); return; }
+      if(t === 'reload'){ js.push('location.reload();'); return; }
+      if((m = t.match(/^open\s+'([^']*)'$/))){ js.push('window.open('+JSON.stringify(m[1])+',"_blank");'); return; }
+      if((m = t.match(/^run\\((\\w+)\\)$/))){ js.push('ACTIONS.'+m[1]+' && ACTIONS.'+m[1]+'();'); return; }
       if((m = t.match(/^repeat\((\d+)\):$/))){ js.push('for(var ri=0;ri<'+m[1]+';ri++){'); stack.push(indent); return; }
       if((m = t.match(/^end$/))){ closeBlocks(0); return; }
       warnings.push('MTWC: unsupported statement "'+t.slice(0,40)+'" · skipped');
@@ -475,7 +578,8 @@ function compileMTWC(src, warnings){
   // event wiring
   actions.forEach(function(a){
     if(!a.event) return;
-    var evMap = {inclick:'click', inhover:'mouseover', inleave:'mouseout', intype:'input'};
+    var evMap = {inclick:'click', inhover:'mouseover', inleave:'mouseout', intype:'input', inchange:'change'};
+    if(a.event === 'inkey'){ js.push('document.addEventListener("keydown",function(e){if(e.key==="'+String(a.tag).replace(/"/g,'')+'")ACTIONS.'+a.name+'();});'); return; }
     if(a.event === 'inload'){ js.push('ACTIONS.'+a.name+'();'); return; }
     if(a.event === 'insubmit'){
       js.push("document.querySelectorAll('form').forEach(function(f){f.addEventListener('submit',function(e){e.preventDefault();ACTIONS."+a.name+"();});});");
@@ -527,6 +631,13 @@ function buildPreview(btw, stw, mtwc){
     esc(b.title||'WebLang page')+'</title><style>'+BASE_CSS+'\n'+c+'</style></head>'+
     '<body'+(b.theme==='dark'?' class="dark"':'')+'>\n'+b.html+
     '\n<script>\nfunction wlLog(m){try{parent.postMessage({wl:"log",msg:String(m)},"*");}catch(e){console.log(m);}}\n'+
+    'function wlGo(u){wlLog("Go to "+u+" (works in the exported site)");}\n'+
+    'function wlEl(id){return document.querySelector("[data-wlid=\\""+id+"\\"]");}\n'+
+    'function wlGet(id){var e=wlEl(id);return e?(e.type==="checkbox"?e.checked:e.value):"";}\n'+
+    'function wlGetForm(id){var f=wlEl(id),o=[];if(f)f.querySelectorAll("input,textarea,select").forEach(function(i){o.push((i.getAttribute("data-name")||i.name||"field")+": "+i.value);});return o.join(", ");}\n'+
+    'function wlClear(id){var e=wlEl(id);if(!e)return;if("value" in e)e.value="";else e.querySelectorAll("input,textarea").forEach(function(i){if(i.type==="checkbox"||i.type==="radio")i.checked=false;else i.value="";});}\n'+
+    'function wlSave(scope,name,val){try{localStorage.setItem("wl:"+scope+":"+name,JSON.stringify(val));}catch(e){wlLog("Save is not available here");}}\n'+
+    'function wlLoad(scope,name,def){try{var v=localStorage.getItem("wl:"+scope+":"+name);return v===null?def:JSON.parse(v);}catch(e){return def;}}\n'+
     'try{\n'+j+'\n}catch(err){wlLog("Runtime error: "+err.message);}\n'+
     'function wlTick(){document.querySelectorAll(".wl-clock").forEach(function(el){el.textContent=new Date().toLocaleTimeString();});}\n'+
     'wlTick();setInterval(wlTick,1000);\n'+
@@ -546,7 +657,7 @@ function buildExport(btw, stw, mtwc){
   var css = page.slice(cssStart, cssEnd);
   var js = page.slice(jsStart, jsEnd);
   // Console logging works independently, without requiring the IDE parent.
-  js = js.replace(/function wlLog\(m\)\{[^\n]*\}/, 'function wlLog(m){console.log(m);}')
+  js = js.replace(/function wlLog\(m\)\{[^\n]*\}/, 'function wlLog(m){console.log(m);}').replace(/function wlGo\(u\)\{[^\n]*\}/, 'function wlGo(u){location.href=u;}');
   var html = page.slice(0, cssStart - 7) + '<link rel="stylesheet" href="style.css">' + page.slice(cssEnd + 8, jsStart - 8) + '<script src="script.js" defer></'+'script>' + page.slice(jsEnd + 9);
   html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">');
   return {files:{'index.html':html, 'style.css':css+'\n', 'script.js':js+'\n'}, warnings:result.warnings};
@@ -591,16 +702,18 @@ if(typeof document !== 'undefined' && document.getElementById){
   }
 
   var exportResult = null;
+  var pageName = 'index';
   var selectedOutput = 'index.html';
   var outputTabs = document.querySelectorAll('[data-output]');
+  function fileName(name){ return name==='index.html' ? pageName+'.html' : name; }
   function selectOutput(name){
     selectedOutput = name;
-    outputTabs.forEach(function(t){t.classList.toggle('on',t.dataset.output===name);});
+    outputTabs.forEach(function(t){t.classList.toggle('on',t.dataset.output===name);t.textContent = fileName(t.dataset.output);});
     document.getElementById('output-code').value = exportResult.files[name];
-    document.getElementById('download-output').textContent = 'Download '+name;
+    document.getElementById('download-output').textContent = 'Download '+fileName(name);
   }
   outputTabs.forEach(function(t){t.addEventListener('click',function(){selectOutput(t.dataset.output);});});
-  document.getElementById('convert').addEventListener('click',function(){
+  function convertNow(){
     exportResult = WebLang.buildExport(eds.btw.value,eds.stw.value,eds.mtwc.value);
     con.innerHTML = '';
     exportResult.warnings.forEach(function(w){log('Warning: '+w,'warn');});
@@ -608,7 +721,8 @@ if(typeof document !== 'undefined' && document.getElementById){
     document.querySelector('.main').hidden = true;
     document.getElementById('exports').hidden = false;
     selectOutput('index.html');
-  });
+  }
+  document.getElementById('convert').addEventListener('click',convertNow);
   document.getElementById('close-export').addEventListener('click',function(){
     document.getElementById('exports').hidden = true;
     document.querySelector('.main').hidden = false;
@@ -616,10 +730,54 @@ if(typeof document !== 'undefined' && document.getElementById){
   document.getElementById('download-output').addEventListener('click',function(){
     var types = {'index.html':'text/html','style.css':'text/css','script.js':'text/javascript'};
     var url = URL.createObjectURL(new Blob([exportResult.files[selectedOutput]],{type:types[selectedOutput]+';charset=utf-8'}));
-    var a = document.createElement('a');a.href=url;a.download=selectedOutput;a.click();
+    var a = document.createElement('a');a.href=url;a.download=fileName(selectedOutput);a.click();
     setTimeout(function(){URL.revokeObjectURL(url);},1000);
   });
+  function downloadFile(name){
+    var types = {'index.html':'text/html','style.css':'text/css','script.js':'text/javascript'};
+    var url = URL.createObjectURL(new Blob([exportResult.files[name]],{type:types[name]+';charset=utf-8'}));
+    var a = document.createElement('a');a.href=url;a.download=fileName(name);document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},1500);
+  }
+  document.getElementById('download-all').addEventListener('click',function(){
+    ['index.html','style.css','script.js'].forEach(function(n,i){setTimeout(function(){downloadFile(n);},i*300);});
+  });
+
+  // Open files by hand (picker or drag and drop). The file goes to the right editor by extension,
+  // then the IDE runs it and creates the output files automatically.
+  function loadFiles(list){
+    var files = Array.prototype.slice.call(list||[]);
+    var wanted = files.filter(function(f){return /\.(btw|stw|mtwc)$/i.test(f.name);});
+    files.filter(function(f){return wanted.indexOf(f)<0;}).forEach(function(f){log('Skipped "'+f.name+'": only .btw, .stw and .mtwc files can be opened','warn');});
+    if(!wanted.length) return;
+    var pending = wanted.length;
+    wanted.forEach(function(f){
+      var r = new FileReader();
+      r.onload = function(){
+        var ext = f.name.split('.').pop().toLowerCase();
+        eds[ext].value = String(r.result);
+        var tab = document.querySelector('.tab[data-f="'+ext+'"]');
+        if(tab) tab.textContent = f.name;
+        if(ext==='btw') pageName = f.name.replace(/\.btw$/i,'').replace(/[^\w.\-]/g,'_') || 'index';
+        if(--pending===0){
+          run();
+          log('Opened '+wanted.map(function(x){return x.name;}).join(', '),'ok');
+          if(document.getElementById('auto-convert').checked) convertNow();
+        }
+      };
+      r.readAsText(f);
+    });
+  }
+  var fileInput = document.getElementById('file-input');
+  document.getElementById('open-files').addEventListener('click',function(){fileInput.click();});
+  fileInput.addEventListener('change',function(){loadFiles(fileInput.files);fileInput.value='';});
+  ['dragover','drop'].forEach(function(ev){document.addEventListener(ev,function(e){
+    if(!e.dataTransfer || Array.prototype.indexOf.call(e.dataTransfer.types||[],'Files')<0) return;
+    e.preventDefault();
+    if(ev==='drop') loadFiles(e.dataTransfer.files);
+  });});
   document.getElementById('run').addEventListener('click', run);
+  document.getElementById('close-export').addEventListener('click',function(){});
   window.addEventListener('message', function(e){
     if(e.data && e.data.wl === 'log') log('» '+e.data.msg, 'log');
   });
@@ -629,3 +787,4 @@ if(typeof document !== 'undefined' && document.getElementById){
 </script>
 </body>
 </html>
+
