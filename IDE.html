@@ -268,10 +268,19 @@ function compileBTW(src, warnings){
         else { out.push('<button class="wl-btn"'+a3+'>'+esc(btext)+'</button>'); }
         s = brest.replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').replace(/->\s*\S+/,'').trim(); continue;
       }
-      if((m = s.match(/^a\s*"([^"]*)"\s*->\s*(\S+)(.*)$/))){
-        var at3 = takeAttrs(m[3]);
-        out.push('<a href="'+esc(pageHref(m[2]))+'"'+(isExternal(m[2])?' target="_blank" rel="noopener"':'')+attrs(at3.id,at3.cls,'a')+'>'+esc(m[1])+'</a>');
-        s = m[3].replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').trim(); continue;
+      if((m = s.match(/^a\s*"([^"]*)"(.*)$/))){
+        // The address can be written as: -> url, href="url", href:url, [href:url] or a bare http(s) url.
+        var arest = m[2], aurl = null, hm;
+        if((hm = arest.match(/\[?\s*href\s*[:=]\s*(?:"([^"]*)"|'([^']*)'|([^\s\]]+))\s*\]?/i))){ aurl = hm[1] !== undefined ? hm[1] : (hm[2] !== undefined ? hm[2] : hm[3]); arest = arest.replace(hm[0], ' '); }
+        else if((hm = arest.match(/->\s*"?([^\s"]+)"?/))){ aurl = hm[1]; arest = arest.replace(hm[0], ' '); }
+        else if((hm = arest.match(/(^|\s)((?:https?:\/\/|mailto:|tel:)\S+)/i))){ aurl = hm[2]; arest = arest.replace(hm[2], ' '); }
+        if(aurl === null || !aurl.trim()){
+          warnings.push('BTW: link "' + m[1] + '" has no address. Write it like a "' + m[1] + '" -> https://site.com or a "' + m[1] + '" href="https://site.com"');
+          s = arest.replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').trim(); continue;
+        }
+        var at3 = takeAttrs(arest);
+        out.push('<a href="'+esc(pageHref(aurl))+'"'+(isExternal(aurl)?' target="_blank" rel="noopener"':'')+attrs(at3.id,at3.cls,'a')+'>'+esc(m[1])+'</a>');
+        s = arest.replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').trim(); continue;
       }
       if((m = s.match(/^email\s*"([^"]*)"(.*)$/))){
         out.push('<a href="mailto:'+esc(m[1])+'"'+attrs(null,null,'email')+'>'+esc(m[1])+'</a>');

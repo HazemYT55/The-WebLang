@@ -128,7 +128,7 @@ action(Dark)
     <h3>Link Tags</h3>
     <table>
       <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
-      <tr><td><code>a</code></td><td>Hyperlink</td><td><code>a "Google" -&gt; https://google.com</code></td></tr>
+      <tr><td><code>a</code></td><td>Hyperlink. The address (HTML <code>href</code>) can be written three ways</td><td><code>a "Google" -&gt; https://google.com</code><br><code>a "Google" href="https://google.com"</code><br><code>a "Google" [href:https://google.com]</code></td></tr>
       <tr><td><code>anchor</code></td><td>Jump to section</td><td><code>anchor #top</code></td></tr>
       <tr><td><code>email</code></td><td>Email link</td><td><code>email "mail@site.com"</code></td></tr>
       <tr><td><code>phone</code></td><td>Phone link</td><td><code>phone "123456"</code></td></tr>
@@ -591,7 +591,7 @@ t.1 – t.6    → headings
 p            → paragraph
 btn          → button
 img: / vid: / mus:   → media
-a "text" -&gt; url     → link
+a "text" -&gt; url  or  a "text" href="url"  → link
 [id:N]       → id for MTWC
 link web.stw / web.mtwc  → connect files
 

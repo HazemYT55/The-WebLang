@@ -61,7 +61,7 @@ img: photo.jpg
 
 | Tag | What it's for | Example |
 |---|---|---|
-| `a` | Hyperlink (external or internal) | `a "Google" -> https://google.com` |
+| `a` | Hyperlink (external or internal). The address (HTML href) can be written as `-> url`, `href="url"` or `[href:url]` | `a "Google" -> https://google.com` or `a "Google" href="https://google.com"` |
 | `a` 🆕 | Link to another BTW page | `a "Next" -> page2.btw` |
 | `anchor` | Jump to a section | `anchor #top` |
 | `email` | Email link | `email "mail@site.com"` |
