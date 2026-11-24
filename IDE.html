@@ -748,8 +748,9 @@ if(typeof document !== 'undefined' && document.getElementById){
   function loadFiles(list){
     var files = Array.prototype.slice.call(list||[]);
     var wanted = files.filter(function(f){return /\.(btw|stw|mtwc)$/i.test(f.name);});
-    files.filter(function(f){return wanted.indexOf(f)<0;}).forEach(function(f){log('Skipped "'+f.name+'": only .btw, .stw and .mtwc files can be opened','warn');});
-    if(!wanted.length) return;
+    var skipped = files.filter(function(f){return wanted.indexOf(f)<0;}).map(function(f){return 'Skipped "'+f.name+'": only .btw, .stw and .mtwc files can be opened';});
+    function logSkipped(){ skipped.forEach(function(m){log(m,'warn');}); }
+    if(!wanted.length){ logSkipped(); return; }
     var pending = wanted.length;
     wanted.forEach(function(f){
       var r = new FileReader();
@@ -763,6 +764,7 @@ if(typeof document !== 'undefined' && document.getElementById){
           run();
           log('Opened '+wanted.map(function(x){return x.name;}).join(', '),'ok');
           if(document.getElementById('auto-convert').checked) convertNow();
+          logSkipped();
         }
       };
       r.readAsText(f);
