@@ -1,22 +1,26 @@
-# STW — Style The Web
+# 🎨 STW — Style The Web
 
 **Extension:** `.stw`
 **Replaces:** CSS
-**Purpose:** Styles BTW elements using short property tags built from CSS property names.
+**Purpose:** Styles BTW elements using short, fixed property tags.
+
+**Version:** 1.1
 
 ---
 
 ## Basic Format
 
 ```
-body([a:center],[f.f:Times],[c:white])
+body([t.a:center],[f.f:Times],[c:white])
 ```
+
+= center text + Times font + white color.
 
 ---
 
 ## How to Connect STW to BTW
 
-Inside your `.btw` file:
+In your `.btw` file:
 
 ```
 link web.stw
@@ -24,88 +28,154 @@ link web.stw
 
 ---
 
-## The Rule — 3 Levels
+## 🆕 What's New in v1.1
 
-Take letters from each word of the CSS property name.
-**Level = how many letters you take from each word.**
-
-| Level | Rule | `font-size` becomes |
-|---|---|---|
-| **1.1** | 1 letter per word | `f.s` |
-| **1.12** | 1 letter from word 1, 2 letters from word 2 | `f.si` |
-| **1.13** | 1 letter from word 1, 3 letters from word 2 | `f.siz` |
-
-**Pick the level that has no clashes** — start with 1.1, go up if two properties collide.
+| Change | Why |
+|---|---|
+| **One official shortcode per property** | No more 1.1 / 1.12 / 1.13 confusion |
+| **No clashes** | Every property has a unique tag |
+| **IDE autocomplete ready** | Type `[` → list appears |
+| **Alias system** | Old tags still work (backward compatible) |
 
 ---
 
-## CSS → STW Translation Table (All Levels)
+## The Rule (v1.1 — Fixed)
 
-| CSS Property | 1.1 | 1.12 | 1.13 | What it does |
-|---|---|---|---|---|
-| `color` | `c` | `c` | `c` | Text color |
-| `background-color` | `b.c` | `b.co` | `b.col` | Background color |
-| `background-image` | `b.i` | `b.im` | `b.ima` | Background image |
-| `font-family` | `f.f` | `f.fa` | `f.fam` | Font type |
-| `font-size` | `f.s` | `f.si` | `f.siz` | Text size |
-| `font-style` | `f.s` ❌ | `f.st` | `f.sty` | Italic / normal |
-| `font-weight` | `f.w` | `f.we` | `f.wei` | Bold / normal |
-| `text-align` | `t.a` | `t.al` | `t.ali` | Align text |
-| `text-decoration` | `t.d` | `t.de` | `t.dec` | Underline etc. |
-| `line-height` | `l.h` | `l.he` | `l.hei` | Space between lines |
-| `letter-spacing` | `l.s` | `l.sp` | `l.spa` | Space between letters |
-| `margin` | `m` | `m` | `m` | Outer space |
-| `margin-top` | `m.t` | `m.to` | `m.top` | Top outer space |
-| `margin-bottom` | `m.b` | `m.bo` | `m.bot` | Bottom outer space |
-| `margin-left` | `m.l` | `m.le` | `m.lef` | Left outer space |
-| `margin-right` | `m.r` | `m.ri` | `m.rig` | Right outer space |
-| `padding` | `p` | `p` | `p` | Inner space |
-| `padding-top` | `p.t` | `p.to` | `p.top` | Top inner space |
-| `padding-bottom` | `p.b` | `p.bo` | `p.bot` | Bottom inner space |
-| `border` | `b` | `b` | `b` | Border |
-| `border-radius` | `b.r` | `b.ra` | `b.rad` | Rounded corners |
-| `border-color` | `b.c` ❌ | `b.co` ❌ | `b.col` ✅ | Border color |
-| `border-width` | `b.w` | `b.wi` | `b.wid` | Border thickness |
-| `width` | `w` | `w` | `w` | Width |
-| `height` | `h` | `h` | `h` | Height |
-| `display` | `d` | `d` | `d` | Display type |
-| `position` | `p` | `p` ❌ | `p` ❌ | Positioning |
-| `opacity` | `o` | `o` | `o` | Transparency |
-| `box-shadow` | `b.s` | `b.sh` | `b.sha` | Shadow |
-| `z-index` | `z.i` | `z.in` | `z.ind` | Layer order |
+**Every CSS property = ONE official shortcode. No levels. No clashes.**
 
-> ✅ = works · ❌ = clash with another property
+```
+color              → c
+font-size          → f.si
+font-style         → f.st
+background-color   → bg
+border-color       → bd
+```
+
+The old 1.1 / 1.12 / 1.13 levels still **work** as aliases, but the **official** tag is always the same.
 
 ---
 
-## Solving Clashes
+## Full CSS → STW Table (Official v1.1)
 
-Two big clash groups:
+### 🎨 Color
 
-**1. Font group**
-```
-font-size  → f.s  (1.1)
-font-style → f.s  (1.1)  ❌
-```
-→ Use **1.12**: `f.si` (size) vs `f.st` (style) ✅
+| CSS Property | STW | What it does | Example |
+|---|---|---|---|
+| `color` | `c` | Text color | `[c:white]` |
+| `background-color` | `bg` | Background color | `[bg:black]` |
+| `background-image` | `bg.i` | Background image | `[bg.i:bg.jpg]` |
+| `border-color` | `bd` | Border color | `[bd:red]` |
+| `outline-color` | `ol` | Outline color | `[ol:blue]` |
+| `opacity` | `o` | Transparency | `[o:0.5]` |
 
-**2. Color group**
-```
-background-color → b.co  (1.12)
-border-color     → b.co  (1.12)  ❌
-```
-→ Use **1.13**: `b.col` ✅ or rename manually → `bg.co` / `bd.co`
+### ✍️ Font & Text
 
-**3. Padding vs Position**
-```
-padding  → p
-position → p  ❌
-```
-→ At any level these clash. Pick one to rename → `p` = padding, `pos` = position.
+| CSS Property | STW | What it does | Example |
+|---|---|---|---|
+| `font-family` | `f.f` | Font type | `[f.f:Times]` |
+| `font-size` | `f.si` | Text size | `[f.si:20px]` |
+| `font-style` | `f.st` | Italic / normal | `[f.st:italic]` |
+| `font-weight` | `f.w` | Bold / normal | `[f.w:bold]` |
+| `text-align` | `t.a` | Align text | `[t.a:center]` |
+| `text-decoration` | `t.d` | Underline etc. | `[t.d:underline]` |
+| `text-transform` | `t.t` | UPPER / lower | `[t.t:uppercase]` |
+| `line-height` | `l.h` | Line spacing | `[l.h:1.5]` |
+| `letter-spacing` | `l.s` | Letter spacing | `[l.s:2px]` |
+| `word-spacing` | `w.s` | Word spacing | `[w.s:5px]` |
+
+### 📦 Spacing
+
+| CSS Property | STW | What it does | Example |
+|---|---|---|---|
+| `margin` | `m` | Outer space | `[m:10px]` |
+| `margin-top` | `m.t` | Top outer | `[m.t:20px]` |
+| `margin-bottom` | `m.b` | Bottom outer | `[m.b:20px]` |
+| `margin-left` | `m.l` | Left outer | `[m.l:10px]` |
+| `margin-right` | `m.r` | Right outer | `[m.r:10px]` |
+| `padding` | `p` | Inner space | `[p:15px]` |
+| `padding-top` | `p.t` | Top inner | `[p.t:10px]` |
+| `padding-bottom` | `p.b` | Bottom inner | `[p.b:10px]` |
+| `padding-left` | `p.l` | Left inner | `[p.l:10px]` |
+| `padding-right` | `p.r` | Right inner | `[p.r:10px]` |
+| `gap` | `g` | Flex/grid gap | `[g:10px]` |
+
+### 📐 Size
+
+| CSS Property | STW | What it does | Example |
+|---|---|---|---|
+| `width` | `w` | Width | `[w:100px]` |
+| `height` | `h` | Height | `[h:50px]` |
+| `min-width` | `mw` | Minimum width | `[mw:200px]` |
+| `max-width` | `xw` | Maximum width | `[xw:800px]` |
+| `min-height` | `mh` | Minimum height | `[mh:100px]` |
+| `max-height` | `xh` | Maximum height | `[xh:500px]` |
+
+### 🔲 Border
+
+| CSS Property | STW | What it does | Example |
+|---|---|---|---|
+| `border` | `b` | Full border | `[b:1px solid red]` |
+| `border-width` | `b.w` | Border thickness | `[b.w:2px]` |
+| `border-style` | `b.st` | Solid / dashed | `[b.st:dashed]` |
+| `border-radius` | `b.r` | Rounded corners | `[b.r:8px]` |
+| `box-shadow` | `sh` | Shadow | `[sh:2px 2px gray]` |
+
+### 📊 Layout
+
+| CSS Property | STW | What it does | Example |
+|---|---|---|---|
+| `display` | `d` | Display type | `[d:flex]` |
+| `position` | `pos` | Positioning | `[pos:absolute]` |
+| `top` | `t` | Top offset | `[t:10px]` |
+| `bottom` | `bo` | Bottom offset | `[bo:10px]` |
+| `left` | `le` | Left offset | `[le:10px]` |
+| `right` | `ri` | Right offset | `[ri:10px]` |
+| `z-index` | `z` | Layer order | `[z:10]` |
+| `flex-direction` | `fl.d` | Flex direction | `[fl.d:row]` |
+| `justify-content` | `j.c` | Horizontal align | `[j.c:center]` |
+| `align-items` | `a.i` | Vertical align | `[a.i:center]` |
+| `overflow` | `ov` | Overflow scroll | `[ov:hidden]` |
+
+### ✨ Effect & Motion
+
+| CSS Property | STW | What it does | Example |
+|---|---|---|---|
+| `transition` | `tr` | Smooth change | `[tr:0.3s]` |
+| `transform` | `tf` | Rotate / scale | `[tf:rotate(45deg)]` |
+| `cursor` | `cu` | Mouse cursor | `[cu:pointer]` |
+| `visibility` | `v` | Hidden but takes space | `[v:hidden]` |
 
 ---
 
-## Example 1 — Center the Page (1.1)
+## 🗑️ Old Levels (Still Work as Aliases)
+
+These still work for backward compatibility, but **use the official ones above**:
+
+| Old (1.1 / 1.12 / 1.13) | Official v1.1 |
+|---|---|
+| `f.s` / `f.si` / `f.siz` | `f.si` |
+| `f.s` / `f.st` / `f.sty` | `f.st` |
+| `b.c` / `b.co` / `b.col` | `bg` (background) or `bd` (border) |
+| `p` (position clash) | `pos` |
+
+---
+
+## 🛠️ Clash Fixes (Solved in v1.1)
+
+| Old Clash | v1.1 Fix |
+|---|---|
+| `f.si` vs `f.st` | Both unique now ✅ |
+| `background-color` vs `border-color` | `bg` vs `bd` ✅ |
+| `padding` vs `position` | `p` vs `pos` ✅ |
+| `min-width` vs `margin` | `mw` vs `m` ✅ |
+
+**No more guessing. Every tag is fixed forever.**
+
+---
+
+## Examples
+
+### Example 1 — Center the Page
 
 ```
 body([t.a:center])
@@ -113,7 +183,7 @@ body([t.a:center])
 
 ---
 
-## Example 2 — Font + Color (1.1)
+### Example 2 — Font + Color
 
 ```
 body([f.f:Times],[c:white])
@@ -121,27 +191,35 @@ body([f.f:Times],[c:white])
 
 ---
 
-## Example 3 — Mixed Levels (best of each)
+### Example 3 — Full Body Style
 
 ```
-body([t.a:center],[f.fa:Times],[c:white],[b.col:black])
+body([t.a:center],[f.f:Times],[c:white],[bg:black])
 ```
-
-= center + Times + white text + black background
 
 ---
 
-## Example 4 — Styled Button
+### Example 4 — Styled Button
 
 ```
-btn([b.co:blue],[c:white],[p:10px],[b.ra:5px])
+btn([bg:blue],[c:white],[p:10px],[b.r:5px],[cu:pointer])
 ```
 
-= blue background, white text, padding 10px, rounded 5px
+= blue background, white text, padding 10px, rounded 5px, pointer cursor
 
 ---
 
-## Example 5 — Full Page
+### Example 5 — Card Component
+
+```
+card([bg:#f0f0f0],[p:20px],[b.r:8px],[sh:0 2px 5px gray])
+```
+
+= light gray card, padding 20px, rounded 8px, soft shadow
+
+---
+
+### Example 6 — Full Page
 
 **`page.btw`**
 ```
@@ -155,7 +233,28 @@ img: photo.jpg
 
 **`web.stw`**
 ```
-body([t.a:center],[f.fa:Times],[c:white],[b.col:black])
+body([t.a:center],[f.f:Times],[c:white],[bg:black])
+btn([bg:blue],[c:white],[p:10px],[b.r:5px])
+img([w:200px],[b.r:10px],[sh:0 4px 8px gray])
+```
+
+---
+
+### Example 7 — Dark Theme
+
+```
+body([bg:#111],[c:#eee],[f.f:Helvetica])
+t.1([c:#fff],[f.si:32px])
+btn([bg:#222],[c:#fff],[b:1px solid #444],[b.r:6px])
+```
+
+---
+
+### Example 8 — Flex Layout
+
+```
+row([d:flex],[j.c:center],[a.i:center],[g:20px])
+col([d:flex],[fl.d:column],[g:10px])
 ```
 
 ---
@@ -167,22 +266,15 @@ SYNTAX:     [prop:value]
 MULTIPLE:   [a:v],[b:v],[c:v]
 CONNECT:    link web.stw   (in .btw file)
 
-LEVELS:
-  1.1   → f.s      (1 letter per word)
-  1.12  → f.si     (1 + 2 letters)
-  1.13  → f.siz    (1 + 3 letters)
-
-COMMON:
-  c      → color
-  b.co   → background-color
-  f.fa   → font-family
-  f.si   → font-size
-  t.al   → text-align
-  m.to   → margin-top
-  p      → padding
-  b.ra   → border-radius
-  w      → width
-  h      → height
+COLOR:      c (text) · bg (background) · bd (border) · o (opacity)
+FONT:       f.f (family) · f.si (size) · f.st (style) · f.w (weight)
+TEXT:       t.a (align) · t.d (decoration) · t.t (transform)
+SPACING:    m (margin) · m.t/b/l/r · p (padding) · p.t/b/l/r · g (gap)
+SIZE:       w (width) · h (height) · mw · xw · mh · xh
+BORDER:     b · b.w · b.st · b.r · sh (shadow)
+LAYOUT:     d (display) · pos (position) · z (z-index)
+            fl.d (flex-dir) · j.c (justify) · a.i (align-items)
+EFFECT:     tr (transition) · tf (transform) · cu (cursor)
 ```
 
 ---
@@ -193,8 +285,8 @@ COMMON:
 - Missing colon → `[c:white]` ✅ / `[c white]` ❌
 - No commas between properties → `[c:white],[f.si:20px]` ✅
 - Forgetting `link web.stw` in the `.btw` file
-- Using 1.1 when it clashes (e.g. `f.s` for both font-size and font-style) → switch to 1.12
-- `padding` and `position` both = `p` → rename one (`pos`)
+- Using old 1.1 levels when the official tag exists → use `f.si` not `f.s`
+- Forgetting units → `[f.si:20px]` ✅ / `[f.si:20]` ❌
 
 ---
 
@@ -208,9 +300,43 @@ body {
   color: white;
   background-color: black;
 }
+
+button {
+  background-color: blue;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
 ```
 
 **New (STW):**
 ```
-body([t.a:center],[f.fa:Times],[c:white],[b.col:black])
+body([t.a:center],[f.f:Times],[c:white],[bg:black])
+btn([bg:blue],[c:white],[p:10px],[b.r:5px],[cu:pointer])
 ```
+
+---
+
+## IDE Autocomplete Support (v1.1) 🆕
+
+Your IDE should show this when you type `[`:
+
+```
+[  →  c: color
+       bg: background-color
+       bd: border-color
+       f.f: font-family
+       f.si: font-size
+       f.st: font-style
+       f.w: font-weight
+       t.a: text-align
+       p: padding
+       m: margin
+       b.r: border-radius
+       ...
+```
+
+**Type `[f.` →** shows only font tags. **Type `[b` →** shows `bg`, `bd`, `b`, `b.r`, etc.
+
+This kills the "I can't remember the shortcode" problem. ✅
