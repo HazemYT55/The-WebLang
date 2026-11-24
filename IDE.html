@@ -53,13 +53,10 @@
 </nav>
 
 <div class="toolbar">
-  <button class="tab on" data-f="btw">page.btw</button>
-  <button class="tab" data-f="stw">web.stw</button>
-  <button class="tab" data-f="mtwc">web.mtwc</button>
-  <button class="tab" id="open-files">Open files…</button>
+  <button class="tab" id="open-files" title="Open files from your computer">Open files</button>
   <input type="file" id="file-input" accept=".btw,.stw,.mtwc,.iotw,.motw,.ifw,.smdf,.stf,.3ds,.ssitw,.md,.txt,.glb,.gltf,.png,.jpg,.jpeg,.gif,.webp,.svg,.mp4,.webm,.mp3,.wav,.ogg" multiple hidden>
-  <label class="tab" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="auto-convert" checked style="margin:0;display:inline-block;width:auto"> Auto-convert</label>
-  <button class="tab" id="convert">Convert to HTML / CSS / JS</button>
+  <input type="checkbox" id="auto-convert" hidden>
+  <button class="tab" id="convert" title="Convert to HTML / CSS / JS">Convert</button>
   <button class="run" id="run">▶ Run</button>
 </div>
 
@@ -359,7 +356,7 @@ function compileBTW(src, warnings){
       }
       // unknown
       var first = s.match(/^\S+/);
-      warnings.push('BTW: unknown tag "'+(first?first[0]:s)+'" · skipped');
+      warnings.push('BTW: unknown tag "'+(first?first[0]:s)+'" · skipped'+(/^h[1-6]$/i.test(first?first[0]:'')?' · headings are written t.1 to t.6':''));
       s = '';
     }
   }
@@ -1211,19 +1208,12 @@ if(typeof document !== 'undefined' && document.getElementById){
     var ta = document.createElement('textarea');
     ta.id = 'ed-' + e[0]; ta.style.display = 'none'; ta.spellcheck = false; ta.placeholder = e[2];
     edHost.appendChild(ta); eds[e[0]] = ta; placeholders[e[0]] = e[2];
-    var tb = document.createElement('button');
-    tb.className = 'tab'; tb.dataset.f = e[0]; tb.textContent = e[1];
-    toolbar.insertBefore(tb, openBtn);
   });
   var filesPane = document.createElement('div');
   filesPane.id = 'ed-files'; filesPane.style.cssText = 'display:none;flex:1;overflow:auto;padding:16px;background:var(--panel2);color:#d6def0;font-size:13.5px;line-height:1.7';
   edHost.appendChild(filesPane); eds.files = filesPane;
-  var filesTab = document.createElement('button');
-  filesTab.className = 'tab'; filesTab.dataset.f = 'files'; filesTab.textContent = 'files';
-  toolbar.insertBefore(filesTab, openBtn);
   var exBtn = document.createElement('button');
   exBtn.className = 'tab'; exBtn.id = 'load-example'; exBtn.textContent = 'Load example';
-  toolbar.insertBefore(exBtn, openBtn);
 
   var tabs = document.querySelectorAll('.tab[data-f]');
   var con = document.getElementById('con');
@@ -1242,25 +1232,22 @@ if(typeof document !== 'undefined' && document.getElementById){
   var docs = {}, activeDoc = {btw:'page.btw', stw:'web.stw', mtwc:'web.mtwc'}, openName = 'page.btw';
   EXTRA.forEach(function(e){ activeDoc[e[0]] = e[1]; });
   Object.keys(activeDoc).forEach(function(k){ docs[activeDoc[k]] = {lang:k, text:null}; });
+  var created = {}, HIDE = {};
+  EXTRA.forEach(function(e){ HIDE[e[1]] = 1; });
   var projStyle = document.createElement('style');
-  projStyle.textContent = '.main{grid-template-columns:210px 1fr 1fr}#proj{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0;overflow:auto;font-size:13px}' +
-    '#proj .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.6px}#proj .ph span{flex:1}' +
-    '#proj .pb{padding:4px 9px;font-size:12px}#proj .pf{padding:8px 10px;border-bottom:1px solid var(--line);display:none;gap:6px;flex-direction:column}#proj .pf input,#proj .pf select{width:100%;padding:6px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:13px}' +
-    '#proj .row{display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);color:#d6def0}#proj .row:hover{background:rgba(124,92,255,.08)}#proj .row.on{background:rgba(124,92,255,.18)}' +
-    '#proj .row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#proj .row .tg{font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 4px}#proj .row .x{color:#f7768e;border:none;background:none;cursor:pointer;font-size:14px}' +
-    '#proj .sec{padding:8px 10px 3px;font-size:11px;color:var(--muted);font-weight:700}#proj .hint{padding:8px 10px;color:var(--muted);font-size:12px;line-height:1.5}' +
-    '#ed-view{display:none;flex:1;overflow:auto;padding:16px;background:var(--panel2);color:#d6def0;text-align:center}#ed-view img,#ed-view video{max-width:100%;max-height:70vh;background:repeating-conic-gradient(#222 0 25%,#2a2a2a 0 50%) 50%/16px 16px;border-radius:8px}#ed-view .vn{margin-top:10px;color:var(--muted);font-size:12px;word-break:break-all}' +
-    '@media(max-width:800px){.main{grid-template-columns:1fr}#proj{max-height:190px;border-right:none;border-bottom:1px solid var(--line)}}';
+  projStyle.textContent = 'body{height:100vh;height:100dvh}.main{grid-template-columns:1fr 1fr}' +
+    '#filebar{display:flex;align-items:center;gap:6px;padding:6px 8px 0;border-bottom:1px solid var(--line);background:var(--panel);flex:none}' +
+    '#ftabs{display:flex;gap:3px;overflow-x:auto;min-width:0;scrollbar-width:thin}' +
+    '.ft{display:inline-flex;align-items:center;gap:6px;padding:7px 8px 7px 12px;border-radius:8px 8px 0 0;background:var(--panel2);border:1px solid var(--line);border-bottom:none;color:var(--muted);font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}' +
+    '.ft.on{color:var(--txt);background:rgba(124,92,255,.18);border-color:var(--acc1)}.ft .x{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 2px}.ft .x:hover{color:#f7768e}' +
+    '#fb-add{display:flex;align-items:center;gap:6px;padding-bottom:5px;flex:none}#fb-plus{padding:4px 12px;font-size:16px;line-height:1}' +
+    '#fb-name{display:none;width:150px;padding:5px 8px;border-radius:7px;border:1px solid var(--acc1);background:var(--panel2);color:var(--txt);font-family:ui-monospace,Consolas,monospace;font-size:13px;outline:none}#fb-msg{display:none;color:#f7768e;font-size:12px;max-width:340px;line-height:1.3}' +
+    '#ed-view{display:none;flex:1;overflow:auto;padding:16px;background:var(--panel2);color:#d6def0;text-align:center}#ed-view img,#ed-view video{max-width:100%;max-height:70vh;background:repeating-conic-gradient(#222 0 25%,#2a2a2a 0 50%) 50%/16px 16px;border-radius:8px}#ed-view .vn{margin-top:10px;color:var(--muted);font-size:12px}' +
+    '@media(max-width:800px){.main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr);min-height:0}.ed{border-right:none;border-bottom:1px solid var(--line)}nav{padding:6px 10px;flex-wrap:nowrap}.logo{width:auto;font-size:16px}nav a.nl{padding:4px 8px;font-size:13px}.toolbar{padding:6px 10px}.console{max-height:64px;padding:6px 10px}#filebar{flex-wrap:wrap;padding-bottom:0}#ftabs{flex:1 1 0}#fb-add{flex-wrap:wrap;flex:0 1 auto;max-width:100%}#fb-name{width:130px}#fb-msg{max-width:none;flex:1 1 100%}.ed,.pv{min-width:0}}';
   document.head.appendChild(projStyle);
-  var side = document.createElement('div'); side.id = 'proj';
-  var FMT = [['btw','page.btw','BTW page'],['stw','web.stw','STW style'],['mtwc','web.mtwc','MTWC logic'],['iotw','data.iotw','IOTW data'],['motw','server.motw','MOTW server'],['ifw','image.ifw','IFW image'],['smdf','docs.smdf','SMDF markdown view'],['stf','viewer.stf','STF text view'],['d3','scene.3ds','3DS 3D scene'],['ssitw','deck.ssitw','SSITW slides']];
-  side.innerHTML = '<div class="ph"><span>PROJECT FILES</span><button class="tab pb" id="pf-new">+ New file</button></div>' +
-    '<div class="pf" id="pf-form"><input id="pf-name" placeholder="File name, e.g. home" autocomplete="off"><select id="pf-fmt">' +
-    '<optgroup label="The 10 WebLang formats">' + FMT.map(function(f){ return '<option value="' + f[0] + '">.' + EXT_OF[f[0]] + ' - ' + f[2] + '</option>'; }).join('') + '</optgroup>' +
-    '<optgroup label="Content files"><option value="md">.md - Markdown text</option><option value="txt">.txt - Plain text</option></optgroup></select>' +
-    '<div style="display:flex;gap:6px"><button class="tab pb" id="pf-create">Create</button><button class="tab pb" id="pf-cancel">Cancel</button></div></div>' +
-    '<div id="pf-list"></div>';
-  document.querySelector('.main').insertBefore(side, document.querySelector('.main').firstChild);
+  var bar = document.createElement('div'); bar.id = 'filebar';
+  bar.innerHTML = '<div id="ftabs"></div><div id="fb-add"><button class="tab" id="fb-plus" title="New file" aria-label="New file">+</button><input id="fb-name" placeholder="name.btw" autocomplete="off" spellcheck="false"><span id="fb-msg"></span></div>';
+  edHost.insertBefore(bar, edHost.firstChild);
   var viewPane = document.createElement('div'); viewPane.id = 'ed-view'; edHost.appendChild(viewPane); eds.view = viewPane;
   var fileTA = document.createElement('textarea'); fileTA.id = 'ed-filetext'; fileTA.style.display = 'none'; fileTA.spellcheck = false;
   edHost.appendChild(fileTA); eds.filetext = fileTA;
@@ -1274,38 +1261,28 @@ if(typeof document !== 'undefined' && document.getElementById){
       var d = {}, t = {};
       Object.keys(docs).forEach(function(n){ d[n] = {lang:docs[n].lang, text:getText(n)}; });
       Object.keys(files).forEach(function(n){ if(typeof files[n].text === 'string' && !files[n].blob) t[n] = files[n].text; });
-      localStorage.setItem('wl-project', JSON.stringify({docs:d, active:activeDoc, texts:t}));
+      localStorage.setItem('wl-project', JSON.stringify({docs:d, active:activeDoc, texts:t, created:created}));
     } catch(e) {}
   }
   function fileIcon(n){ var x = n.split('.').pop().toLowerCase(); return /^(png|jpe?g|gif|webp|svg)$/.test(x) ? '🖼' : /^(mp4|webm)$/.test(x) ? '🎬' : /^(mp3|wav|ogg)$/.test(x) ? '🎵' : /^(glb|gltf)$/.test(x) ? '🧊' : '📄'; }
+  function isShown(n){ return !(docs[n] && HIDE[n] && created[n] !== true && !getText(n).trim()); }
   function renderProject(){
-    var box = document.getElementById('pf-list'); if(!box) return;
+    var box = document.getElementById('ftabs'); if(!box) return;
     box.innerHTML = '';
-    function sec(t){ var s = document.createElement('div'); s.className = 'sec'; s.textContent = t; box.appendChild(s); }
-    function row(n, tag, active, rm){
-      var r = document.createElement('div'); r.className = 'row' + (openName === n ? ' on' : ''); r.title = n;
-      var ic = document.createElement('span'); ic.textContent = fileIcon(n);
-      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = n;
-      r.appendChild(ic); r.appendChild(nm);
-      if(tag){ var tg = document.createElement('span'); tg.className = 'tg'; tg.textContent = tag + (active ? ' ▶' : ''); tg.title = active ? 'This file is used by Run and Convert' : 'Click to switch to this file'; r.appendChild(tg); }
-      var x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.title = 'Remove ' + n;
+    function tab(n, rm){
+      var r = document.createElement('div'); r.className = 'ft' + (openName === n ? ' on' : ''); r.title = n;
+      var nm = document.createElement('span'); nm.textContent = n; r.appendChild(nm);
+      var x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.title = 'Close ' + n; x.setAttribute('aria-label', 'Close ' + n);
       x.addEventListener('click', function(e){ e.stopPropagation(); rm(n); });
       r.appendChild(x);
       r.addEventListener('click', function(){ openFile(n); });
       box.appendChild(r);
     }
-    sec('WEBLANG FILES (' + Object.keys(docs).length + ')');
-    Object.keys(docs).forEach(function(n){ row(n, LANG_LABEL[docs[n].lang], isActive(n), removeDoc); });
-    var fn = Object.keys(files);
-    sec('CONTENT AND MEDIA (' + fn.length + ')');
-    if(!fn.length){ var h = document.createElement('div'); h.className = 'hint'; h.textContent = 'No files yet. Use Open files or drag files here.'; box.appendChild(h); }
-    fn.forEach(function(n){ row(n, '', false, removeAsset); });
-    var hint = document.createElement('div'); hint.className = 'hint';
-    hint.textContent = 'Files marked ▶ are used by Run and Convert. Your text files are saved in this browser. Images, videos and models must be opened again after a reload.';
-    box.appendChild(hint);
+    Object.keys(docs).filter(isShown).forEach(function(n){ tab(n, removeDoc); });
+    Object.keys(files).forEach(function(n){ tab(n, removeAsset); });
     persist();
   }
-  function openFile(n){
+    function openFile(n){
     openName = n;
     if(docs[n]){ switchDoc(n); return; }
     var f = files[n]; if(!f) return;
@@ -1342,9 +1319,9 @@ if(typeof document !== 'undefined' && document.getElementById){
   }
   function removeDoc(n){
     var k = docs[n].lang, others = Object.keys(docs).filter(function(m){ return m !== n && docs[m].lang === k; });
-    if(!others.length){ log('Cannot remove ' + n + ': keep at least one ' + LANG_LABEL[k] + ' file. Clear its text instead.', 'warn'); return; }
+    if(!others.length){ if(HIDE[n]){ created[n] = false; docs[n].text = ''; if(isActive(n)) eds[k].value = ''; openName = activeDoc.btw; selectTab('btw'); renderProject(); run(); return; } log('Cannot close ' + n + ': it is the only ' + LANG_LABEL[k] + ' file. Clear its text instead, or create another ' + LANG_LABEL[k] + ' file first.', 'warn'); return; }
     if(isActive(n)) switchDoc(others[0], true);
-    delete docs[n]; if(openName === n) openName = activeDoc[k];
+    delete docs[n]; delete created[n]; if(openName === n) openName = activeDoc[k];
     renderProject(); run();
   }
   function removeAsset(n){
@@ -1352,32 +1329,41 @@ if(typeof document !== 'undefined' && document.getElementById){
     delete files[n]; if(openName === n){ openName = activeDoc[activeTab] || 'page.btw'; selectTab(docs[openName] ? docs[openName].lang : 'btw'); }
     renderFiles(); run();
   }
-  function newFile(rawName, fmt){
-    var ext = EXT_OF[fmt] || fmt;
-    var name = String(rawName || '').trim().replace(/[^\w.\-]/g, '_');
-    if(!name){ log('Type a file name first', 'warn'); return false; }
-    if(name.toLowerCase().slice(-(ext.length + 1)) !== '.' + ext) name = name.replace(/\.[A-Za-z0-9]+$/, '') + '.' + ext;
-    if(docs[name] || files[name]){ log('A file named ' + name + ' already exists', 'warn'); return false; }
-    if(LANG_EXT[ext]){ docs[name] = {lang:fmt, text:''}; switchDoc(name); }
+var ALLOWED = Object.keys(LANG_EXT).concat(TEXT_EXT).map(function(x){ return '.' + x; }).join(' ');
+  var fbName = document.getElementById('fb-name'), fbMsg = document.getElementById('fb-msg'), fbPlus = document.getElementById('fb-plus');
+  function fbErr(m){ fbMsg.textContent = m; fbMsg.style.display = 'inline'; log(m, 'err'); }
+  function newFile(rawName){
+    var raw = String(rawName || '').trim();
+    if(!raw){ fbErr('Type a name with its ending, for example page.btw'); return false; }
+    var name = raw.replace(/\s+/g, '_').replace(/[^\w.\-]/g, '_');
+    var m = name.match(/\.([A-Za-z0-9]+)$/);
+    if(!m){ fbErr('"' + raw + '" needs an ending so I know the language, for example ' + name + '.btw. Endings: ' + ALLOWED); return false; }
+    var ext = m[1].toLowerCase(); name = name.slice(0, name.length - ext.length) + ext;
+    var fmt = LANG_EXT[ext];
+    if(!fmt && TEXT_EXT.indexOf(ext) < 0){ fbErr('".' + ext + '" is not a WebLang ending. Use one of: ' + ALLOWED); return false; }
+    if(files[name] || (docs[name] && isShown(name))){ fbErr('A file named ' + name + ' already exists. Pick another name.'); return false; }
+    if(docs[name]){ created[name] = true; switchDoc(name, true); }
+    else if(fmt){ docs[name] = {lang:fmt, text:''}; created[name] = true; switchDoc(name, true); }
     else { files[name] = {text:'', size:0}; renderFiles(); openFile(name); }
-    log('Created ' + name + '. Type your code in the editor.', 'ok');
+    var ed = eds[docs[name] ? docs[name].lang : 'filetext']; if(ed && ed.focus) ed.focus();
     return true;
   }
-  document.getElementById('pf-new').addEventListener('click', function(){
-    var f = document.getElementById('pf-form'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex';
-    if(f.style.display === 'flex') document.getElementById('pf-name').focus();
+  function closeAdd(){ fbName.style.display = 'none'; fbMsg.style.display = 'none'; fbName.value = ''; }
+  fbPlus.addEventListener('click', function(){
+    if(fbName.style.display === 'inline-block'){ closeAdd(); return; }
+    fbName.style.display = 'inline-block'; fbMsg.style.display = 'none'; fbName.focus();
   });
-  document.getElementById('pf-cancel').addEventListener('click', function(){ document.getElementById('pf-form').style.display = 'none'; });
-  document.getElementById('pf-create').addEventListener('click', function(){
-    var nm = document.getElementById('pf-name');
-    if(newFile(nm.value, document.getElementById('pf-fmt').value)){ nm.value = ''; document.getElementById('pf-form').style.display = 'none'; }
+  fbName.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ if(newFile(fbName.value)) closeAdd(); }
+    else if(e.key === 'Escape') closeAdd();
+    else fbMsg.style.display = 'none';
   });
-  document.getElementById('pf-name').addEventListener('keydown', function(e){ if(e.key === 'Enter') document.getElementById('pf-create').click(); });
   fileTA.addEventListener('input', function(){ var n = fileTA.dataset.name; if(files[n]){ files[n].text = fileTA.value; files[n].size = fileTA.value.length; persist(); } });
   Object.keys(eds).forEach(function(k){ if(eds[k].tagName === 'TEXTAREA') eds[k].addEventListener('input', persist); });
   (function restore(){
     var s; try { s = JSON.parse(localStorage.getItem('wl-project') || 'null'); } catch(e) {}
     if(!s || !s.docs) return;
+    created = s.created || {};
     var saved = s.docs, act = s.active || {};
     Object.keys(docs).forEach(function(n){ delete docs[n]; });
     Object.keys(saved).forEach(function(n){ if(LANG_LABEL[saved[n].lang]) docs[n] = {lang:saved[n].lang, text:saved[n].text || ''}; });
@@ -1437,12 +1423,18 @@ if(typeof document !== 'undefined' && document.getElementById){
     return {iotw:eds.iotw.value, motw:eds.motw.value, ifw:eds.ifw.value, smdf:eds.smdf.value, stf:eds.stf.value, d3:eds.d3.value, ssitw:eds.ssitw.value};
   }
 
+  function fileWarn(w){
+    return String(w).replace(/^(BTW|STW|MTWC|IOTW|MOTW|IFW|SMDF|STF|SSITW|3DS):/, function(_, L){
+      var k; Object.keys(LANG_LABEL).forEach(function(x){ if(LANG_LABEL[x] === L) k = x; });
+      return (k && activeDoc[k] ? activeDoc[k] : L) + ':';
+    });
+  }
   function run(){
     con.innerHTML = '';
     var r = WebLang.buildPreview(eds.btw.value, eds.stw.value, eds.mtwc.value, more(), files);
     out.srcdoc = r.html;
     if(r.warnings.length){
-      r.warnings.forEach(function(w){ log('⚠ ' + w, 'warn'); });
+      r.warnings.forEach(function(w){ log('⚠ ' + fileWarn(w), 'warn'); });
     } else {
       log('✓ Compiled with no warnings', 'ok');
     }
@@ -1491,7 +1483,7 @@ if(typeof document !== 'undefined' && document.getElementById){
     if(!exportResult.warnings.length) log('Converted ' + (Object.keys(exportResult.files).length + Object.keys(exportResult.assets).length) + ' files with no warnings', 'ok');
     buildOutputTabs();
     selectOutput('index.html');
-    if(stay === true){ log('Files opened and converted. Press "Convert to HTML / CSS / JS" to see and download the result.', 'ok'); return; }
+    if(stay === true){ log('Converted. Press Convert to see and download the result.', 'ok'); return; }
     document.querySelector('.main').hidden = true;
     document.getElementById('exports').hidden = false;
   }
@@ -1512,7 +1504,7 @@ if(typeof document !== 'undefined' && document.getElementById){
         if(files[f.name] && files[f.name].url) URL.revokeObjectURL(files[f.name].url);
         files[f.name] = {url:URL.createObjectURL(f), size:f.size, blob:f};
         jobs.push({f:f, ext:ext, done:true});
-      } else skipped.push('Skipped "' + f.name + '": unsupported file type');
+      } else skipped.push('Could not open "' + f.name + '": ' + (f.name.indexOf('.') < 0 ? 'it has no ending' : '.' + ext + ' files are not supported') + '. You can open: ' + ALLOWED + ', and images, video, audio and .glb models.');
     });
     function logSkipped(){ skipped.forEach(function(m){ log(m, 'warn'); }); }
     if(!jobs.length){ logSkipped(); return; }
@@ -1520,6 +1512,7 @@ if(typeof document !== 'undefined' && document.getElementById){
     function finish(){
       renderFiles(); run();
       log('Opened ' + jobs.map(function(j){ return j.f.name; }).join(', '), 'ok');
+      if(con.querySelector('.warn')) log('The files opened fine. The ⚠ lines above are hints about code inside them, they do not block anything.', 'log');
       if(document.getElementById('auto-convert').checked) convertNow(true);
       logSkipped();
     }
@@ -1536,6 +1529,7 @@ if(typeof document !== 'undefined' && document.getElementById){
         }
         if(--pending === 0) finish();
       };
+      r.onerror = function(){ log('Could not read "' + j.f.name + '": the browser could not load it. Try opening it again.', 'err'); if(--pending === 0) finish(); };
       r.readAsText(j.f);
     });
   }
