@@ -62,6 +62,7 @@
     <a href="#btw">BTW</a>
     <a href="#stw">STW</a>
     <a href="#mtwc">MTWC</a>
+    <a href="#v11">New in v1.1</a>
     <a href="#together">How they connect</a>
     <a href="#examples">Examples</a>
     <a href="#cheat">Cheat Sheet</a>
@@ -70,7 +71,7 @@
 
   <div>
     <h1>WebLang Documentation</h1>
-    <p class="lead">v1.0 · A simple, readable web language that replaces HTML, CSS and JavaScript with 3 clean file types.</p>
+    <p class="lead">v1.1 · A simple, readable web language that replaces HTML, CSS and JavaScript with 3 clean file types.</p>
 
     <h2 id="start">🚀 Quick Start</h2>
     <p class="ds">A full interactive page in 3 tiny files:</p>
@@ -83,7 +84,7 @@ t.1 "Welcome" [id:1]
 btn "Dark Mode" [id:2]
 img: photo.jpg</pre>
     <pre># web.stw
-body([t.a:center],[f.fa:Times],[c:white],[b.col:black])</pre>
+body([t.a:center],[f.f:Times],[c:white],[bg:black])</pre>
     <pre># web.mtwc
 btn.id = 2 , connect to 'page.btw':
 
@@ -256,53 +257,66 @@ footer {
     <h2 id="stw">🎨 STW · Style The Web</h2>
     <p class="ds"><b>Extension:</b> <code>.stw</code> · <b>Replaces:</b> CSS · <b>Purpose:</b> styles BTW elements using short property tags. Connect it with <code>link web.stw</code> in your <code>.btw</code> file.</p>
 
-    <h3>The Rule · 3 Levels</h3>
-    <p class="ds">Take letters from each word of the CSS property name, and pick the level with no clashes. Example: <code>font-size</code></p>
-    <table>
-      <tr><th>Level</th><th>Rule</th><th>Result</th></tr>
-      <tr><td><b>1.1</b></td><td>1 letter per word</td><td><code>f.s</code></td></tr>
-      <tr><td><b>1.12</b></td><td>1 letter from word 1, 2 from word 2</td><td><code>f.si</code></td></tr>
-      <tr><td><b>1.13</b></td><td>1 letter from word 1, 3 from word 2</td><td><code>f.siz</code></td></tr>
-    </table>
-
+    <h3>The Rule · One Shortcode Per Property (v1.1)</h3>
+    <p class="ds">Every CSS property has exactly one official STW shortcode. No levels, no clashes. Older shortcodes such as <code>f.s</code>, <code>b.col</code> or <code>b.ra</code> still work in the IDE, but it warns you and shows the official one to use.</p>
     <h3>CSS → STW Translation Table</h3>
     <table>
-      <tr><th>CSS Property</th><th>1.1</th><th>1.12</th><th>1.13</th></tr>
-      <tr><td>color</td><td><code>c</code></td><td><code>c</code></td><td><code>c</code></td></tr>
-      <tr><td>background-color</td><td><code>b.c</code></td><td><code>b.co</code></td><td><code>b.col</code></td></tr>
-      <tr><td>background-image</td><td><code>b.i</code></td><td><code>b.im</code></td><td><code>b.ima</code></td></tr>
-      <tr><td>font-family</td><td><code>f.f</code></td><td><code>f.fa</code></td><td><code>f.fam</code></td></tr>
-      <tr><td>font-size</td><td><code>f.s</code></td><td><code>f.si</code></td><td><code>f.siz</code></td></tr>
-      <tr><td>font-style</td><td><code>f.s</code> ❌</td><td><code>f.st</code></td><td><code>f.sty</code></td></tr>
-      <tr><td>font-weight</td><td><code>f.w</code></td><td><code>f.we</code></td><td><code>f.wei</code></td></tr>
-      <tr><td>text-align</td><td><code>t.a</code></td><td><code>t.al</code></td><td><code>t.ali</code></td></tr>
-      <tr><td>text-decoration</td><td><code>t.d</code></td><td><code>t.de</code></td><td><code>t.dec</code></td></tr>
-      <tr><td>line-height</td><td><code>l.h</code></td><td><code>l.he</code></td><td><code>l.hei</code></td></tr>
-      <tr><td>letter-spacing</td><td><code>l.s</code></td><td><code>l.sp</code></td><td><code>l.spa</code></td></tr>
-      <tr><td>margin</td><td><code>m</code></td><td><code>m</code></td><td><code>m</code></td></tr>
-      <tr><td>margin-top</td><td><code>m.t</code></td><td><code>m.to</code></td><td><code>m.top</code></td></tr>
-      <tr><td>margin-bottom</td><td><code>m.b</code></td><td><code>m.bo</code></td><td><code>m.bot</code></td></tr>
-      <tr><td>margin-left</td><td><code>m.l</code></td><td><code>m.le</code></td><td><code>m.lef</code></td></tr>
-      <tr><td>margin-right</td><td><code>m.r</code></td><td><code>m.ri</code></td><td><code>m.rig</code></td></tr>
-      <tr><td>padding</td><td><code>p</code></td><td><code>p</code></td><td><code>p</code></td></tr>
-      <tr><td>padding-top</td><td><code>p.t</code></td><td><code>p.to</code></td><td><code>p.top</code></td></tr>
-      <tr><td>padding-bottom</td><td><code>p.b</code></td><td><code>p.bo</code></td><td><code>p.bot</code></td></tr>
-      <tr><td>border</td><td><code>b</code></td><td><code>b</code></td><td><code>b</code></td></tr>
-      <tr><td>border-radius</td><td><code>b.r</code></td><td><code>b.ra</code></td><td><code>b.rad</code></td></tr>
-      <tr><td>border-color</td><td><code>b.c</code> ❌</td><td><code>b.co</code> ❌</td><td><code>b.col</code> ✅</td></tr>
-      <tr><td>border-width</td><td><code>b.w</code></td><td><code>b.wi</code></td><td><code>b.wid</code></td></tr>
-      <tr><td>width</td><td><code>w</code></td><td><code>w</code></td><td><code>w</code></td></tr>
-      <tr><td>height</td><td><code>h</code></td><td><code>h</code></td><td><code>h</code></td></tr>
-      <tr><td>display</td><td><code>d</code></td><td><code>d</code></td><td><code>d</code></td></tr>
-      <tr><td>opacity</td><td><code>o</code></td><td><code>o</code></td><td><code>o</code></td></tr>
-      <tr><td>box-shadow</td><td><code>b.s</code></td><td><code>b.sh</code></td><td><code>b.sha</code></td></tr>
-      <tr><td>z-index</td><td><code>z.i</code></td><td><code>z.in</code></td><td><code>z.ind</code></td></tr>
+      <tr><th>CSS Property</th><th>STW</th></tr>
+      <tr><td>color</td><td><code>c</code></td></tr>
+      <tr><td>background-color</td><td><code>bg</code></td></tr>
+      <tr><td>background-image</td><td><code>bg.i</code></td></tr>
+      <tr><td>border-color</td><td><code>bd</code></td></tr>
+      <tr><td>opacity</td><td><code>o</code></td></tr>
+      <tr><td>font-family</td><td><code>f.f</code></td></tr>
+      <tr><td>font-size</td><td><code>f.si</code></td></tr>
+      <tr><td>font-style</td><td><code>f.st</code></td></tr>
+      <tr><td>font-weight</td><td><code>f.w</code></td></tr>
+      <tr><td>text-align</td><td><code>t.a</code></td></tr>
+      <tr><td>text-decoration</td><td><code>t.d</code></td></tr>
+      <tr><td>text-transform</td><td><code>t.t</code></td></tr>
+      <tr><td>line-height</td><td><code>l.h</code></td></tr>
+      <tr><td>letter-spacing</td><td><code>l.s</code></td></tr>
+      <tr><td>margin</td><td><code>m</code></td></tr>
+      <tr><td>margin-top</td><td><code>m.t</code></td></tr>
+      <tr><td>margin-bottom</td><td><code>m.b</code></td></tr>
+      <tr><td>margin-left</td><td><code>m.l</code></td></tr>
+      <tr><td>margin-right</td><td><code>m.r</code></td></tr>
+      <tr><td>padding</td><td><code>p</code></td></tr>
+      <tr><td>padding-top</td><td><code>p.t</code></td></tr>
+      <tr><td>padding-bottom</td><td><code>p.b</code></td></tr>
+      <tr><td>padding-left</td><td><code>p.l</code></td></tr>
+      <tr><td>padding-right</td><td><code>p.r</code></td></tr>
+      <tr><td>gap</td><td><code>g</code></td></tr>
+      <tr><td>width</td><td><code>w</code></td></tr>
+      <tr><td>height</td><td><code>h</code></td></tr>
+      <tr><td>min-width</td><td><code>mw</code></td></tr>
+      <tr><td>max-width</td><td><code>xw</code></td></tr>
+      <tr><td>min-height</td><td><code>mh</code></td></tr>
+      <tr><td>max-height</td><td><code>xh</code></td></tr>
+      <tr><td>border</td><td><code>b</code></td></tr>
+      <tr><td>border-width</td><td><code>b.w</code></td></tr>
+      <tr><td>border-style</td><td><code>b.st</code></td></tr>
+      <tr><td>border-radius</td><td><code>b.r</code></td></tr>
+      <tr><td>box-shadow</td><td><code>sh</code></td></tr>
+      <tr><td>display</td><td><code>d</code></td></tr>
+      <tr><td>position</td><td><code>pos</code></td></tr>
+      <tr><td>top</td><td><code>t</code></td></tr>
+      <tr><td>bottom</td><td><code>bo</code></td></tr>
+      <tr><td>left</td><td><code>le</code></td></tr>
+      <tr><td>right</td><td><code>ri</code></td></tr>
+      <tr><td>z-index</td><td><code>z</code></td></tr>
+      <tr><td>flex-direction</td><td><code>fl.d</code></td></tr>
+      <tr><td>justify-content</td><td><code>j.c</code></td></tr>
+      <tr><td>align-items</td><td><code>a.i</code></td></tr>
+      <tr><td>overflow</td><td><code>ov</code></td></tr>
+      <tr><td>transition</td><td><code>tr</code></td></tr>
+      <tr><td>transform</td><td><code>tf</code></td></tr>
+      <tr><td>cursor</td><td><code>cu</code></td></tr>
     </table>
-    <div class="note"><b>Clash fixes:</b> <code>f.s</code> means font-size, so font-style goes to 1.12 → <code>f.st</code>. Padding and position are both <code>p</code> → rename position to <code>pos</code>. Border-color clashes with background-color → use 1.13 <code>b.col</code> for both, or rename to <code>bg.co</code> / <code>bd.co</code>.</div>
 
     <h3>STW Example</h3>
-    <pre>body([t.a:center],[f.fa:Times],[c:white],[b.col:black])
-btn([b.co:blue],[c:white],[p:10px],[b.ra:5px])</pre>
+    <pre>body([t.a:center],[f.f:Times],[c:white],[bg:black])
+btn([bg:blue],[c:white],[p:10px],[b.r:5px],[cu:pointer])</pre>
 
     <h2 id="mtwc">⚡ MTWC · Make The Web Click</h2>
     <p class="ds"><b>Extension:</b> <code>.mtwc</code> · <b>Replaces:</b> JavaScript · <b>Purpose:</b> logic and interactivity for BTW pages.</p>
@@ -386,6 +400,61 @@ btn([b.co:blue],[c:white],[p:10px],[b.ra:5px])</pre>
       <tr><td><code>now</code> / <code>today</code></td><td>Current time / date</td><td><code>show now</code></td></tr>
       <tr><td><code>timer(N)</code></td><td>Countdown</td><td><code>timer(10)</code></td></tr>
     </table>
+
+    <h2 id="v11">🆕 New in v1.1</h2>
+    <p class="ds">These features now work in the IDE and in converted files.</p>
+
+    <h3>Read form data (MTWC)</h3>
+    <pre>form [id:1] {
+  input email [id:4]
+  btn "Login" [id:3]
+}
+t.1 "Welcome" [id:6]</pre>
+    <pre>btn.id = 3 , connect to 'page.btw':
+
+action(Login)
+  inclick btn:
+    if get input.4 == "":
+      alert "Type your email first"
+    else
+      set t.1 "Welcome, {get input.4}!"
+      clear form.1</pre>
+
+    <h3>Multi-page sites</h3>
+    <pre># page1.btw
+a "Next page" -&gt; page2.btw
+
+# web.mtwc
+action(Next)
+  inclick btn:
+    save name to 'page2'
+    go 'page2.btw'
+
+# page2's MTWC
+action(Hello)
+  inload page:
+    load name from 'page2'
+    set t.1 "Hello, (name)"</pre>
+    <p class="ds">Convert each page and save it as its own file, for example <code>page2.html</code>. Links to <code>.btw</code> pages become <code>.html</code> links.</p>
+
+    <h3>Custom components</h3>
+    <pre>define Card {
+  card {
+    img: prop image [w:200]
+    t.2 prop title
+    slot
+  }
+}
+
+use Card { prop image "a.jpg" prop title "App One" }
+use Card { prop image "b.jpg" prop title "App Two" p "Extra text goes in the slot" }</pre>
+
+    <h3>Video and music options</h3>
+    <pre>vid: intro.mp4 [autoplay] [mute] [loop] [w:400] [poster:"cover.jpg"]
+mus: song.mp3 [loop] [volume:0.5]</pre>
+
+    <h3>Open files in the IDE</h3>
+    <p class="ds">Press <b>Open files…</b> or drag <code>.btw</code>, <code>.stw</code> and <code>.mtwc</code> files onto the IDE. Each file goes to the right editor, the page runs, and with <b>Auto-convert</b> on the HTML, CSS and JS files are created for you to download.</p>
 
     <h2 id="together">🔗 How the 3 Files Work Together</h2>
     <p class="ds">Order matters:</p>
@@ -477,13 +546,15 @@ link web.stw / web.mtwc  → connect files
 ### STW
 SYNTAX:   [prop:value]
 MULTIPLE: [a:v],[b:v]
-LEVELS:   1.1 → f.s · 1.12 → f.si · 1.13 → f.siz
-KEY:      c · b.col · f.fa · f.si · t.al · m.to · p · b.ra
+RULE:     one official shortcode per property (v1.1)
+KEY:      c · bg · bd · f.f · f.si · f.st · t.a · m.t · p · b.r · sh
 
 ### MTWC
 CONNECT:  btn.id = 1 , connect to 'web.btw':
 ACTIONS:  action / run / stop / repeat / loop / wait
-EVENTS:   inclick / inload / inhover / intype / insubmit
+EVENTS:   inclick / inload / inhover / intype / insubmit / inchange / inkey
+FORMS:    get input.id · get form.id · clear input.id · clear form.id
+PAGES:    go 'page2.btw' · back · reload · open 'url' · save x · load x
 LOGIC:    if / else if / else / and / or / not
 STATE:    var x = 0 · (x) == 5 · (x) == (x) + 1
 OUTPUT:   show / alert / set / hide / reveal
@@ -499,17 +570,18 @@ STYLE:    theme dark / light · class add / remove</pre>
       <tr><td>Forgot <code>connect to 'web.btw':</code></td><td>Add at top of MTWC</td></tr>
       <tr><td><code>if</code> without colon</td><td><code>if (x) == true:</code> ✅</td></tr>
       <tr><td><code>=</code> instead of <code>==</code> in if</td><td><code>if (x) == true:</code> ✅</td></tr>
-      <tr><td>Clashing STW (<code>f.s</code>)</td><td>Use 1.12 → <code>f.si</code></td></tr>
-      <tr><td><code>padding</code> &amp; <code>position</code> both <code>p</code></td><td>Rename position → <code>pos</code></td></tr>
+      <tr><td>Old STW shortcode (<code>f.s</code>, <code>b.col</code>)</td><td>Use the official one: <code>f.si</code>, <code>bg</code></td></tr>
+      <tr><td>Linking a page as <code>.html</code> from BTW</td><td>Write <code>a "Next" -&gt; page2.btw</code>, the converter makes it <code>page2.html</code></td></tr>
     </table>
 
-    <div class="note"><b>Note about the IDE:</b> the <a href="IDE.html" style="color:var(--acc2);font-weight:700">WebLang IDE</a> runs a working subset of the language in your browser: BTW structure and text tags, the STW translation table, and MTWC basics (actions, inclick / inload / inhover, if / else, variables, theme, set / hide / reveal, counters). New tags from this spec get added over time.</div>
+    <div class="note"><b>Note about the IDE:</b> the <a href="IDE.html" style="color:var(--acc2);font-weight:700">WebLang IDE</a> runs a working subset of the language in your browser: BTW structure and text tags, the STW translation table, and MTWC basics (actions, events, if / else, variables, form reading, save / load, page navigation, theme, set / hide / reveal), components, media options, and file opening with automatic conversion. Parts of the full spec such as IOTW, MOTW, IFW, SMDF, STF, 3DS and SSITW are not in the IDE yet.</div>
   </div>
 </div>
 
 <footer>
-  WebLang v1.0 · Experimental prototype · Made by <a href="Creator.html">Hazem</a> ·
+  WebLang v1.1 · Experimental prototype · Made by <a href="Creator.html">Hazem</a> ·
   <a href="https://github.com/HazemYT55/The-WebLang">GitHub</a>
 </footer>
 </body>
 </html>
+
