@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebLang · BTW · STW · MTWC</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#121829; --panel2:#0e1424; --line:rgba(255,255,255,.08);
+    --txt:#e8ecf5; --muted:#9aa4c0; --acc1:#7c5cff; --acc2:#00d4ff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--txt); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; line-height:1.6}
+  a{color:inherit; text-decoration:none}
+  nav{position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:8px;
+      padding:14px 24px; background:rgba(11,15,26,.85); backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+  .logo{font-weight:800; font-size:20px; margin-right:auto}
+  .logo span{background:linear-gradient(90deg,var(--acc1),var(--acc2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  nav a.nl{padding:7px 14px; border-radius:9px; color:var(--muted); font-size:14px; font-weight:600}
+  nav a.nl:hover{color:var(--txt); background:var(--panel)}
+  nav a.nl.on{color:var(--txt); background:var(--panel); box-shadow:inset 0 0 0 1px var(--line)}
+  @media (max-width:640px){nav{flex-wrap:wrap; padding:10px 14px} .logo{width:100%} nav a.nl{padding:6px 10px; font-size:13px}}
+  .hero{max-width:1000px; margin:0 auto; padding:80px 24px 48px; text-align:center}
+  .pill{display:inline-block; font-size:13px; font-weight:700; letter-spacing:.5px; color:var(--acc2);
+        border:1px solid rgba(0,212,255,.35); border-radius:999px; padding:5px 14px; margin-bottom:22px}
+  h1{font-size:52px; line-height:1.15; font-weight:800}
+  h1 span{background:linear-gradient(90deg,var(--acc1),var(--acc2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .sub{color:var(--muted); font-size:18px; max-width:640px; margin:18px auto 34px}
+  .cta{display:flex; gap:14px; justify-content:center; flex-wrap:wrap}
+  .btn{display:inline-block; padding:13px 26px; border-radius:12px; font-weight:700; font-size:15px}
+  .btn.pri{background:linear-gradient(90deg,var(--acc1),var(--acc2)); color:#fff}
+  .btn.sec{background:var(--panel); box-shadow:inset 0 0 0 1px var(--line); color:var(--txt)}
+  .wrap{max-width:1000px; margin:0 auto; padding:24px}
+  h2{font-size:30px; margin:56px 0 8px; text-align:center}
+  .h2sub{text-align:center; color:var(--muted); margin-bottom:32px}
+  .trio{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:24px}
+  .card h3{font-size:19px; margin-bottom:4px}
+  .card .rep{font-size:13px; color:var(--acc2); font-weight:700; margin-bottom:10px}
+  .card p{color:var(--muted); font-size:14px}
+  .tag{display:inline-block; font-size:12px; font-weight:700; background:var(--panel2); border:1px solid var(--line);
+       border-radius:7px; padding:2px 9px; margin-top:12px; font-family:ui-monospace,Consolas,monospace; color:var(--acc2)}
+  pre{background:var(--panel2); border:1px solid var(--line); border-radius:14px; padding:20px;
+      overflow-x:auto; font-family:ui-monospace,Consolas,monospace; font-size:13.5px; line-height:1.65; color:#d6def0}
+  .files3{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px}
+  .files3 pre{font-size:12.5px}
+  .fhead{display:flex; align-items:center; gap:8px; font-family:ui-monospace,Consolas,monospace; font-size:13px;
+         font-weight:700; margin-bottom:10px}
+  .dot{width:10px; height:10px; border-radius:50%}
+  .kw{color:#7c5cff; font-weight:700}
+  .st{color:#9ece6a}
+  .cm{color:#565f89}
+  footer{border-top:1px solid var(--line); margin-top:80px; padding:28px 24px; text-align:center; color:var(--muted); font-size:14px}
+  footer a{color:var(--acc2); font-weight:600}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Web<span>Lang</span></div>
+  <a class="nl on" href="index.html">Home</a>
+  <a class="nl" href="docs.html">Docs</a>
+  <a class="nl" href="IDE.html">IDE</a>
+  <a class="nl" href="Creator.html">Creator</a>
+</nav>
+
+<div class="hero">
+  <div class="pill">BTW · STW · MTWC</div>
+  <h1>The web, rewritten in <span>3 simple files</span></h1>
+  <p class="sub">WebLang replaces HTML, CSS and JavaScript with three clean, readable file types you can learn in minutes.</p>
+  <div class="cta">
+    <a class="btn pri" href="IDE.html">Try the IDE</a>
+    <a class="btn sec" href="docs.html">Read the Docs</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <h2>Three files. That's the whole language.</h2>
+  <p class="h2sub">Each one does the job of a classic web technology, with a fraction of the syntax.</p>
+  <div class="trio">
+    <div class="card">
+      <h3>📄 BTW</h3>
+      <div class="rep">replaces HTML</div>
+      <p>Structure and content. Headings, buttons, forms, layouts and media in short, readable lines.</p>
+      <span class="tag">.btw</span>
+    </div>
+    <div class="card">
+      <h3>🎨 STW</h3>
+      <div class="rep">replaces CSS</div>
+      <p>Styling with short property tags. <code style="font-family:monospace">[b.col:black]</code> instead of <code style="font-family:monospace">background-color: black</code>.</p>
+      <span class="tag">.stw</span>
+    </div>
+    <div class="card">
+      <h3>⚡ MTWC</h3>
+      <div class="rep">replaces JavaScript</div>
+      <p>Logic and interactivity. Events, variables and actions in plain words: <code style="font-family:monospace">inclick btn:</code></p>
+      <span class="tag">.mtwc</span>
+    </div>
+  </div>
+
+  <h2>A full interactive page, in 3 tiny files</h2>
+  <p class="h2sub">This is real WebLang. Paste it into the IDE and press Run.</p>
+  <div class="files3">
+    <div class="card">
+      <div class="fhead"><span class="dot" style="background:#7c5cff"></span>page.btw</div>
+      <pre>link web.stw
+link web.mtwc
+
+title : My App
+t.1 <span class="st">"Welcome"</span> [id:1]
+btn <span class="st">"Dark Mode"</span> [id:2]</pre>
+    </div>
+    <div class="card">
+      <div class="fhead"><span class="dot" style="background:#00d4ff"></span>web.stw</div>
+      <pre>body([t.a:center],
+ [f.fa:Arial],
+ [c:white],
+ [b.col:#11142a])
+
+btn([b.co:#7c5cff],
+ [c:white],[p:12px],
+ [b.ra:8px])</pre>
+    </div>
+    <div class="card">
+      <div class="fhead"><span class="dot" style="background:#ff9e64"></span>web.mtwc</div>
+      <pre>btn.id = 2 , connect to <span class="st">'page.btw'</span>:
+
+action(Dark)
+  inclick btn:
+    if (Dark) == true:
+      (Dark) == false
+      theme light
+    else
+      (Dark) == true
+      theme dark</pre>
+    </div>
+  </div>
+</div>
+
+<footer>
+  WebLang v1.0 · Experimental prototype · Made by <a href="Creator.html">Hazem</a> ·
+  <a href="https://github.com/HazemYT55/The-WebLang">GitHub</a>
+</footer>
+</body>
+</html>
