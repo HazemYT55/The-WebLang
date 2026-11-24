@@ -669,7 +669,7 @@ function compileMOTW(src, warnings){
     var l = raw.trim(); if(!l || l[0] === '#') return;
     var m;
     if(/^link\b/.test(l)) return;
-    if((m = l.match(/^make\s+it\s*\((PHP|MTWC)\)$/i))){ mode = m[1].toUpperCase(); return; }
+    if((m = l.match(/^make\s+it\s*\((PHP|MTWC)\)\s*(#.*)?$/i))){ mode = m[1].toUpperCase(); return; }
     if((m = l.match(/^make\s+var\((\d+)\)\s*=\s*(show_vid|show_img|show_text)\s+"((?:[^"\\]|\\.)*)"\s*(#.*)?$/))){
       var n = parseInt(m[1], 10);
       if(vars[n]) warnings.push('MOTW: var(' + n + ') is used twice · the later one wins');
@@ -1298,7 +1298,7 @@ if(typeof document !== 'undefined' && document.getElementById){
   function typeOf(name){ return types[name.split('.').pop()] || 'text/plain'; }
   function buildOutputTabs(){
     outputTabsBox.innerHTML = '';
-    Object.keys(exportResult.files).forEach(function(n){
+    Object.keys(exportResult.files).concat(Object.keys(exportResult.assets)).forEach(function(n){
       var b = document.createElement('button');
       b.className = 'tab'; b.dataset.output = n; b.textContent = fileName(n);
       b.addEventListener('click', function(){ selectOutput(n); });
@@ -1306,26 +1306,30 @@ if(typeof document !== 'undefined' && document.getElementById){
     });
     var d1 = document.createElement('button'); d1.className = 'tab'; d1.id = 'download-output'; d1.addEventListener('click', function(){ downloadFile(selectedOutput); });
     var d2 = document.createElement('button'); d2.className = 'tab'; d2.id = 'download-all';
-    d2.textContent = 'Download all ' + Object.keys(exportResult.files).length + ' files';
-    d2.addEventListener('click', function(){ Object.keys(exportResult.files).forEach(function(n, i){ setTimeout(function(){ downloadFile(n); }, i * 300); }); });
+    var total = Object.keys(exportResult.files).length + Object.keys(exportResult.assets).length;
+    d2.textContent = 'Download all ' + total + ' files';
+    d2.addEventListener('click', function(){ Object.keys(exportResult.files).concat(Object.keys(exportResult.assets)).forEach(function(n, i){ setTimeout(function(){ downloadFile(n); }, i * 300); }); });
     outputTabsBox.appendChild(d1); outputTabsBox.appendChild(d2);
   }
   function selectOutput(name){
     selectedOutput = name;
     outputTabsBox.querySelectorAll('[data-output]').forEach(function(t){ t.classList.toggle('on', t.dataset.output === name); });
-    document.getElementById('output-code').value = exportResult.files[name];
+    document.getElementById('output-code').value = exportResult.assets[name] ? '[Binary file, ' + exportResult.assets[name].size + ' bytes. It is saved with Download all, next to the page.]' : exportResult.files[name];
     document.getElementById('download-output').textContent = 'Download ' + fileName(name);
   }
   function downloadFile(name){
-    var url = URL.createObjectURL(new Blob([exportResult.files[name]], {type: typeOf(name) + ';charset=utf-8'}));
+    var url = URL.createObjectURL(exportResult.assets[name] || new Blob([exportResult.files[name]], {type: typeOf(name) + ';charset=utf-8'}));
     var a = document.createElement('a'); a.href = url; a.download = fileName(name); document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
   }
   function convertNow(){
     exportResult = WebLang.buildExport(eds.btw.value, eds.stw.value, eds.mtwc.value, more(), files);
+    exportResult.assets = {};
+    var allText = Object.keys(exportResult.files).map(function(k){ return exportResult.files[k]; }).join('\n');
+    Object.keys(files).forEach(function(n){ if(files[n].blob && allText.indexOf(n) >= 0) exportResult.assets[n] = files[n].blob; });
     con.innerHTML = '';
     exportResult.warnings.forEach(function(w){ log('Warning: ' + w, 'warn'); });
-    if(!exportResult.warnings.length) log('Converted ' + Object.keys(exportResult.files).length + ' files with no warnings', 'ok');
+    if(!exportResult.warnings.length) log('Converted ' + (Object.keys(exportResult.files).length + Object.keys(exportResult.assets).length) + ' files with no warnings', 'ok');
     document.querySelector('.main').hidden = true;
     document.getElementById('exports').hidden = false;
     buildOutputTabs();
@@ -1346,7 +1350,7 @@ if(typeof document !== 'undefined' && document.getElementById){
       if(LANG_EXT[ext] || TEXT_EXT.indexOf(ext) >= 0) jobs.push({f:f, ext:ext});
       else if(BLOB_EXT.indexOf(ext) >= 0){
         if(files[f.name] && files[f.name].url) URL.revokeObjectURL(files[f.name].url);
-        files[f.name] = {url:URL.createObjectURL(f), size:f.size};
+        files[f.name] = {url:URL.createObjectURL(f), size:f.size, blob:f};
         jobs.push({f:f, ext:ext, done:true});
       } else skipped.push('Skipped "' + f.name + '": unsupported file type');
     });
