@@ -1411,6 +1411,7 @@ if(typeof document !== 'undefined' && document.getElementById){
   tabs.forEach(function(t){ t.addEventListener('click', function(){ selectTab(t.dataset.f); }); });
   function selectTab(k){
     activeTab = k;
+    document.getElementById('exports').hidden = true; document.querySelector('.main').hidden = false;
     document.querySelectorAll('.tab[data-f]').forEach(function(x){ x.classList.toggle('on', x.dataset.f === k); });
     Object.keys(eds).forEach(function(key){ eds[key].style.display = (key === k) ? 'block' : 'none'; });
   }
@@ -1480,7 +1481,7 @@ if(typeof document !== 'undefined' && document.getElementById){
     var a = document.createElement('a'); a.href = url; a.download = fileName(name); document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
   }
-  function convertNow(){
+  function convertNow(stay){
     exportResult = WebLang.buildExport(eds.btw.value, eds.stw.value, eds.mtwc.value, more(), files);
     exportResult.assets = {};
     var allText = Object.keys(exportResult.files).map(function(k){ return exportResult.files[k]; }).join('\n');
@@ -1488,10 +1489,11 @@ if(typeof document !== 'undefined' && document.getElementById){
     con.innerHTML = '';
     exportResult.warnings.forEach(function(w){ log('Warning: ' + w, 'warn'); });
     if(!exportResult.warnings.length) log('Converted ' + (Object.keys(exportResult.files).length + Object.keys(exportResult.assets).length) + ' files with no warnings', 'ok');
-    document.querySelector('.main').hidden = true;
-    document.getElementById('exports').hidden = false;
     buildOutputTabs();
     selectOutput('index.html');
+    if(stay === true){ log('Files opened and converted. Press "Convert to HTML / CSS / JS" to see and download the result.', 'ok'); return; }
+    document.querySelector('.main').hidden = true;
+    document.getElementById('exports').hidden = false;
   }
   document.getElementById('convert').addEventListener('click', convertNow);
   document.getElementById('close-export').addEventListener('click', function(){
@@ -1518,7 +1520,7 @@ if(typeof document !== 'undefined' && document.getElementById){
     function finish(){
       renderFiles(); run();
       log('Opened ' + jobs.map(function(j){ return j.f.name; }).join(', '), 'ok');
-      if(document.getElementById('auto-convert').checked) convertNow();
+      if(document.getElementById('auto-convert').checked) convertNow(true);
       logSkipped();
     }
     if(!pending){ finish(); return; }
@@ -1556,6 +1558,3 @@ if(typeof document !== 'undefined' && document.getElementById){
 </script>
 </body>
 </html>
-
-
-
