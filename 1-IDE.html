@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebLang IDE · all 10 languages</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#121829; --panel2:#0e1424; --line:rgba(255,255,255,.08);
+    --txt:#e8ecf5; --muted:#9aa4c0; --acc1:#7c5cff; --acc2:#00d4ff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--txt); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; height:100vh; display:flex; flex-direction:column}
+  a{color:inherit; text-decoration:none}
+  nav{display:flex; align-items:center; gap:8px; padding:12px 20px; border-bottom:1px solid var(--line)}
+  .logo{font-weight:800; font-size:20px; margin-right:auto}
+  .logo span{background:linear-gradient(90deg,var(--acc1),var(--acc2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  nav a.nl{padding:6px 13px; border-radius:9px; color:var(--muted); font-size:14px; font-weight:600}
+  nav a.nl:hover{color:var(--txt); background:var(--panel)}
+  nav a.nl.on{color:var(--txt); background:var(--panel); box-shadow:inset 0 0 0 1px var(--line)}
+  .toolbar{display:flex; align-items:center; gap:8px; padding:10px 20px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+  .tab{padding:7px 16px; border-radius:9px; background:var(--panel2); border:1px solid var(--line); color:var(--muted);
+       font-family:ui-monospace,Consolas,monospace; font-size:13px; font-weight:700; cursor:pointer}
+  .tab.on{color:var(--txt); border-color:var(--acc1); background:rgba(124,92,255,.12)}
+  .run{margin-left:auto; padding:8px 24px; border:none; border-radius:10px; font-weight:800; font-size:14px;
+       background:linear-gradient(90deg,var(--acc1),var(--acc2)); color:#fff; cursor:pointer}
+  .run:hover{filter:brightness(1.1)}
+  .main{flex:1; display:grid; grid-template-columns:1fr 1fr; min-height:0}
+  .ed{border-right:1px solid var(--line); display:flex; flex-direction:column; min-height:0}
+  textarea{flex:1; width:100%; resize:none; border:none; outline:none; background:var(--panel2); color:#d6def0;
+           font-family:ui-monospace,Consolas,monospace; font-size:13.5px; line-height:1.7; padding:16px}
+  .pv{display:flex; flex-direction:column; min-height:0}
+  iframe{flex:1; width:100%; border:none; background:#fff}
+  .phead{padding:8px 16px; font-size:12px; font-weight:700; color:var(--muted); letter-spacing:.6px; border-bottom:1px solid var(--line)}
+  .console{max-height:120px; overflow:auto; border-top:1px solid var(--line); background:var(--panel2);
+           font-family:ui-monospace,Consolas,monospace; font-size:12px; padding:10px 20px; color:var(--muted)}
+  .console .ok{color:#9ece6a} .console .warn{color:#e0af68} .console .err{color:#f7768e} .console .log{color:#7aa2f7}
+  #exports{flex:1;min-height:0;background:var(--panel2)}
+  #exports:not([hidden]){display:flex;flex-direction:column}
+  #exports textarea{min-height:180px}
+  .export-note{padding:10px 20px;color:var(--muted);font-size:13px;line-height:1.5}
+  .main[hidden]{display:none}
+  @media(max-width:600px){nav{flex-wrap:wrap;padding:10px}.logo{width:100%}.toolbar{padding:10px;gap:6px}.tab{padding:7px 9px;font-size:12px}.run{margin-left:0}.main{min-height:380px}.export-note{padding:10px}}
+  @media (max-width:800px){.main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Web<span>Lang</span> IDE</div>
+  <a class="nl" href="index.html">Home</a>
+  <a class="nl" href="docs.html">Docs</a>
+  <a class="nl" href="Creator.html">Creator</a>
+</nav>
+
+<div class="toolbar">
+  <button class="tab" id="open-files" title="Open files from your computer">Open files</button>
+  <input type="file" id="file-input" accept=".btw,.stw,.mtwc,.iotw,.motw,.ifw,.smdf,.stf,.3ds,.ssitw,.md,.txt,.glb,.gltf,.png,.jpg,.jpeg,.gif,.webp,.svg,.mp4,.webm,.mp3,.wav,.ogg" multiple hidden>
+  <input type="checkbox" id="auto-convert" hidden>
+  <button class="tab" id="convert" title="Convert to HTML / CSS / JS">Convert</button>
+  <button class="run" id="run">▶ Run</button>
+</div>
+
+<div class="main">
+  <div class="ed">
+    <textarea id="ed-btw" spellcheck="false">link web.stw
+link web.mtwc
+
+title : My App
+t.1 "Welcome to WebLang" [id:1]
+p "This page was rendered from BTW, STW and MTWC."
+btn "Dark Mode" [id:2]
+line
+row {
+  card { t.2 "Fast" }
+  card { t.2 "Simple" }
+  card { t.2 "Fun" }
+}</textarea>
+    <textarea id="ed-stw" style="display:none" spellcheck="false">body([t.a:center],[f.f:Arial],[c:#1a1d2e],[bg:#f4f6ff])
+
+btn([bg:#7c5cff],[c:white],[p:12px],[b.r:8px])
+
+card([bg:white],[b.r:12px],[p:16px],[sh:0 4px 14px rgba(0,0,0,0.08)])</textarea>
+    <textarea id="ed-mtwc" style="display:none" spellcheck="false">btn.id = 2 , connect to 'page.btw':
+
+action(Dark)
+  inclick btn:
+    if (Dark) == true:
+      (Dark) == false
+      theme light
+    else
+      (Dark) == true
+      theme dark</textarea>
+  </div>
+  <div class="pv">
+    <div class="phead">PREVIEW</div>
+    <iframe id="out" title="WebLang preview"></iframe>
+  </div>
+</div>
+<section id="exports" hidden aria-label="Converted files">
+  <div class="toolbar"><strong>Converted files</strong><button class="tab" id="close-export">Back to editor</button></div>
+  <p class="export-note">Experimental subset. Check compiler warnings below. Download all three files into the same folder, then open the exported index.html. These outputs are separate from this IDE site. Links to .btw pages become .html links: convert each page and save it under that name (for example page2.html).</p>
+  <div class="toolbar" id="output-tabs">
+    <button class="tab on" data-output="index.html">index.html</button>
+    <button class="tab" data-output="style.css">style.css</button>
+    <button class="tab" data-output="script.js">script.js</button>
+    <button class="tab" id="download-output">Download index.html</button>
+    <button class="tab" id="download-all">Download all 3 files</button>
+  </div>
+  <textarea id="output-code" readonly spellcheck="false" aria-label="Converted source code"></textarea>
+</section>
+<div class="console" id="con"></div>
+
+<script>
+// ============================================================
+// WebLang compiler (pure functions, no DOM · testable in node)
+// ============================================================
+(function(global){
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+
+function pageHref(u){return String(u).replace(/\.btw(?=($|[#?]))/,'.html');}
+function isExternal(u){return /^(https?:)?\/\//i.test(u)||/^(mailto|tel):/i.test(u);}
+function flagsOf(str){
+  var f={}, mm, re=/\[([a-z]+)(?::("[^"]*"|[^\]]*))?\]/g;
+  while((mm=re.exec(str))){ f[mm[1]]=(mm[2]===undefined?true:mm[2].replace(/^"|"$/g,'')); }
+  return f;
+}
+function mediaAttrs(f, kind){
+  var a='';
+  if(f.autoplay) a+=' autoplay';
+  if(f.mute||f.muted) a+=' muted';
+  if(f.loop) a+=' loop';
+  if(f.poster && kind==='vid') a+=' poster="'+esc(f.poster)+'"';
+  if(f.volume!==undefined && f.volume!==true){ var v=parseFloat(f.volume); if(!isNaN(v)) a+=' onloadedmetadata="this.volume='+Math.max(0,Math.min(1,v))+'"'; }
+  return a;
+}
+function sizeStyle(f){
+  var st='max-width:100%';
+  if(f.w) st+=';width:'+esc(/^\d+$/.test(f.w)?f.w+'px':f.w);
+  if(f.h) st+=';height:'+esc(/^\d+$/.test(f.h)?f.h+'px':f.h);
+  return st;
+}
+function findClose(t, open){ // index of } matching the { at open; quotes skipped
+  var d=0, q=false;
+  for(var i=open;i<t.length;i++){
+    var c=t[i];
+    if(c==='"') q=!q;
+    if(q) continue;
+    if(c==='{') d++;
+    else if(c==='}'){ d--; if(d===0) return i; }
+  }
+  return -1;
+}
+function expandComponents(src, warnings){
+  var defs={}, text=src, m, re=/(^|[\s}])define\s+(\w+)\s*\{/;
+  while((m=re.exec(text))){
+    var open=m.index+m[0].length-1, close=findClose(text,open);
+    if(close<0){ warnings.push('BTW: define '+m[2]+' is missing a closing }'); break; }
+    defs[m[2]]=text.slice(open+1,close);
+    text=text.slice(0,m.index+m[1].length)+text.slice(close+1);
+  }
+  var useRe=/(^|[\s{}])use\s+(\w+)\s*\{/;
+  for(var guard=0; guard<200 && (m=useRe.exec(text)); guard++){
+    var o=m.index+m[0].length-1, c=findClose(text,o);
+    if(c<0){ warnings.push('BTW: use '+m[2]+' is missing a closing }'); break; }
+    var content=text.slice(o+1,c), name=m[2], props={}, pm, pre=/prop\s+(\w+)\s+"((?:[^"\\]|\\.)*)"/g;
+    while((pm=pre.exec(content))) props[pm[1]]=pm[2];
+    var slot=content.replace(/prop\s+\w+\s+"(?:[^"\\]|\\.)*"/g,'').trim();
+    var rep='';
+    if(!defs.hasOwnProperty(name)){ warnings.push('BTW: component "'+name+'" is not defined · skipped'); }
+    else {
+      rep=defs[name].replace(/(:\s*)?\bprop\s+(\w+)/g,function(all,colon,key){
+        if(!props.hasOwnProperty(key)){ warnings.push('BTW: component "'+name+'" has no value for prop "'+key+'"'); return colon?colon:'""'; }
+        return colon ? colon+props[key] : '"'+props[key]+'"';
+      }).replace(/^[ \t]*slot[ \t]*$/mg, slot);
+    }
+    text=text.slice(0,m.index+m[1].length)+'\n'+rep+'\n'+text.slice(c+1);
+  }
+  if(/(^|[\s{}])use\s+\w+\s*\{/.test(text)) warnings.push('BTW: components nest too deeply · some use blocks skipped');
+  return text;
+}
+
+// ---------- BTW -> HTML ----------
+var BTW_CONTAINERS = {box:'div', row:'div', col:'div', grid:'div', card:'div',
+  header:'header', footer:'footer', nav:'nav', section:'section', aside:'aside',
+  center:'div', form:'form', ul:'ul', ol:'ol', dl:'dl', table:'table',
+  thead:'thead', tbody:'tbody', tr:'tr', select:'select'};
+var BTW_CONTAINER_CLASS = {box:'wl-box', row:'wl-row', col:'wl-col', grid:'wl-grid',
+  card:'wl-card', header:'wl-header', footer:'wl-footer', nav:'wl-nav',
+  section:'wl-section', aside:'wl-aside', center:'wl-center', form:'wl-form'};
+
+function compileBTW(src, warnings){
+  var lines = expandComponents(src, warnings).split(/\r?\n/);
+  var out = [], stack = [], title = null, themeInit = null;
+
+  function attrs(idAttr, clsAttr, tag){
+    var a = ' data-wltag="'+tag+'"';
+    if(idAttr) a += ' data-wlid="'+esc(idAttr)+'"';
+    if(clsAttr) a += ' class="'+esc(clsAttr)+'"';
+    return a;
+  }
+
+  function parseLine(raw){
+    var s = raw.trim();
+    if(s.charAt(0) === '#') return;
+    while(s.length){
+      var m;
+      if(s[0] === '{'){ // open handled together with container; stray { ignored
+        s = s.slice(1).trim(); continue;
+      }
+      if(s[0] === '}'){
+        if(stack.length) out.push(stack.pop());
+        else warnings.push('BTW: stray "}"');
+        s = s.slice(1).trim(); continue;
+      }
+      // attribute suffix extractor
+      function takeAttrs(str){
+        var id=null, cls=null, mm;
+        var re = /\[id:([^\]]+)\]/g;
+        while((mm = re.exec(str))) id = mm[1];
+        var re2 = /\[class:([^\]]+)\]/g;
+        while((mm = re2.exec(str))) cls = mm[1];
+        return {id:id, cls:cls};
+      }
+      // containers with brace
+      if((m = s.match(/^([a-z][\w.]*)\s*((?:\[[^\]]*\]\s*)*)(?=\{)/)) && BTW_CONTAINERS[m[1]]){
+        var tag = m[1];
+        var htmlTag = BTW_CONTAINERS[tag];
+        var clsName = BTW_CONTAINER_CLASS[tag] || ('wl-'+tag);
+        var cat = takeAttrs(m[2]);
+        out.push('<'+htmlTag+' class="'+clsName+(cat.cls?' '+esc(cat.cls):'')+'" data-wltag="'+tag+'"'+(cat.id?' data-wlid="'+esc(cat.id)+'"':'')+'>');
+        stack.push('</'+htmlTag+'>');
+        s = s.slice(m[0].length).trim(); continue;
+      }
+      if((m = s.match(/^title\s*:\s*(.*)$/))){
+        title = m[1].trim(); s=''; continue;
+      }
+      if((m = s.match(/^(link|meta)\b.*$/))){ s=''; continue; }
+      if((m = s.match(/^icon\s*:\s*(\S+)/))){ s = s.slice(m[0].length).trim(); continue; }
+      if((m = s.match(/^lang\s+(\w+)/))){ s = s.slice(m[0].length).trim(); continue; }
+      if((m = s.match(/^comment\b/))){ s=''; continue; }
+      if((m = s.match(/^theme\s+(dark|light)/))){
+        themeInit = m[1]; s = s.slice(m[0].length).trim(); continue;
+      }
+      if((m = s.match(/^(t\.[1-6]|p|b|i|u|s|code|quote|mark|small|label|li|dt|dd|caption|td|th|opt|badge|check|radio)\s*"([^"]*)"(.*)$/))){
+        var tag2 = m[1], text = m[2], rest = m[3];
+        var at = takeAttrs(rest);
+        var map = {quote:'blockquote'};
+        var htag = /^t\.[1-6]$/.test(tag2) ? 'h'+tag2.slice(2) : (map[tag2] || tag2);
+        var a2 = attrs(at.id, at.cls, tag2);
+        if(tag2==='badge'){ out.push('<span class="wl-badge"'+a2+'>'+esc(text)+'</span>'); }
+        else if(tag2==='check' || tag2==='radio'){
+          var t = tag2==='check'?'checkbox':'radio';
+          out.push('<label'+a2+'><input type="'+t+'"> '+esc(text)+'</label>');
+        }
+        else if(tag2==='opt'){ out.push('<option'+a2+'>'+esc(text)+'</option>'); }
+        else out.push('<'+htag+a2+'>'+esc(text)+'</'+htag+'>');
+        s = rest.replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').trim(); continue;
+      }
+      if((m = s.match(/^btn(\.icon|\.link|\.disabled)?\s*"([^"]*)"(.*)$/))){
+        var kind = m[1]||'', btext = m[2], brest = m[3];
+        var at2 = takeAttrs(brest);
+        var lm = brest.match(/->\s*(\S+)/);
+        var a3 = attrs(at2.id, at2.cls, 'btn');
+        if(kind === '.link' && lm){ out.push('<a class="wl-btn" href="'+esc(pageHref(lm[1]))+'"'+a3+'>'+esc(btext)+'</a>'); }
+        else if(kind === '.disabled'){ out.push('<button class="wl-btn" disabled'+a3+'>'+esc(btext)+'</button>'); }
+        else { out.push('<button class="wl-btn"'+a3+'>'+esc(btext)+'</button>'); }
+        s = brest.replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').replace(/->\s*\S+/,'').trim(); continue;
+      }
+      if((m = s.match(/^a\s*"([^"]*)"\s*->\s*(\S+)(.*)$/))){
+        var at3 = takeAttrs(m[3]);
+        out.push('<a href="'+esc(pageHref(m[2]))+'"'+(isExternal(m[2])?' target="_blank" rel="noopener"':'')+attrs(at3.id,at3.cls,'a')+'>'+esc(m[1])+'</a>');
+        s = m[3].replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').trim(); continue;
+      }
+      if((m = s.match(/^email\s*"([^"]*)"(.*)$/))){
+        out.push('<a href="mailto:'+esc(m[1])+'"'+attrs(null,null,'email')+'>'+esc(m[1])+'</a>');
+        s = m[2].trim(); continue;
+      }
+      if((m = s.match(/^phone\s*"([^"]*)"(.*)$/))){
+        out.push('<a href="tel:'+esc(m[1])+'"'+attrs(null,null,'phone')+'>'+esc(m[1])+'</a>');
+        s = m[2].trim(); continue;
+      }
+      if((m = s.match(/^anchor\s+(#\S+)(.*)$/))){ s = m[2].trim(); continue; }
+      if((m = s.match(/^(img|gif|svg|avatar)\s*:\s*(\S+)(.*)$/))){
+        var imf = flagsOf(m[3]);
+        out.push('<img src="'+esc(m[2])+'" alt="'+esc(imf.alt||'')+'" style="'+sizeStyle(imf)+'"'+attrs(imf.id||null,imf['class']||null,m[1])+'>');
+        s = m[3].replace(/\[[^\]]*\]/g,'').trim(); continue;
+      }
+      if((m = s.match(/^vid\s*:\s*(\S+)(.*)$/))){
+        var vf = flagsOf(m[2]);
+        out.push('<video src="'+esc(m[1])+'" controls playsinline style="'+sizeStyle(vf)+'"'+mediaAttrs(vf,'vid')+attrs(vf.id||null,vf['class']||null,'vid')+'></video>');
+        s = m[2].replace(/\[[^\]]*\]/g,'').trim(); continue;
+      }
+      if((m = s.match(/^mus\s*:\s*(\S+)(.*)$/))){
+        var af = flagsOf(m[2]);
+        out.push('<audio src="'+esc(m[1])+'" controls'+mediaAttrs(af,'mus')+attrs(af.id||null,af['class']||null,'mus')+'></audio>');
+        s = m[2].replace(/\[[^\]]*\]/g,'').trim(); continue;
+      }
+      if((m = s.match(/^iframe\s*:\s*(\S+)(.*)$/))){
+        out.push('<iframe src="'+esc(m[1])+'" style="width:100%;min-height:300px;border:1px solid #ccc;border-radius:8px" data-wltag="iframe"></iframe>');
+        s = m[2].trim(); continue;
+      }
+      if((m = s.match(/^(input|pass|num|date|textarea|color)\s+(\w+)(.*)$/))){
+        var it = m[1], nm = m[2], irest = m[3];
+        var at4 = takeAttrs(irest);
+        var a4 = attrs(at4.id, at4.cls, it) + ' data-name="'+esc(nm)+'"';
+        if(it==='pass') out.push('<input type="password" placeholder="'+esc(nm)+'"'+a4+'>');
+        else if(it==='num') out.push('<input type="number" placeholder="'+esc(nm)+'"'+a4+'>');
+        else if(it==='date') out.push('<input type="date"'+a4+'>');
+        else if(it==='color') out.push('<input type="color" title="'+esc(nm)+'"'+a4+'>');
+        else if(it==='textarea') out.push('<textarea placeholder="'+esc(nm)+'"'+a4+'></textarea>');
+        else out.push('<input type="text" placeholder="'+esc(nm)+'"'+a4+'>');
+        s = irest.replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').trim(); continue;
+      }
+      if((m = s.match(/^file\s+(\S+)(.*)$/))){
+        out.push('<input type="file" data-wltag="file">');
+        s = m[2].trim(); continue;
+      }
+      if((m = s.match(/^range\s+(\d+)-(\d+)(.*)$/))){
+        out.push('<input type="range" min="'+m[1]+'" max="'+m[2]+'" data-wltag="range">');
+        s = m[3].trim(); continue;
+      }
+      if((m = s.match(/^progress\s+(\d+)%?(.*)$/))){
+        out.push('<progress value="'+m[1]+'" max="100" data-wltag="progress"></progress>');
+        s = m[2].trim(); continue;
+      }
+      if((m = s.match(/^submit\s*"([^"]*)"(.*)$/))){
+        var at5 = takeAttrs(m[2]);
+        out.push('<button class="wl-btn" type="submit"'+attrs(at5.id,at5.cls,'submit')+'>'+esc(m[1])+'</button>');
+        s = m[2].replace(/\[id:[^\]]+\]/g,'').replace(/\[class:[^\]]+\]/g,'').trim(); continue;
+      }
+      if((m = s.match(/^tooltip\s*"([^"]*)"(.*)$/))){
+        out.push('<span class="wl-tip" title="'+esc(m[1])+'" data-wltag="tooltip">&#9432;</span>');
+        s = m[2].trim(); continue;
+      }
+      if((m = s.match(/^count\s*:\s*(\S+)(.*)$/))){
+        out.push('<span class="wl-count" data-wltag="count">'+esc(m[1])+'</span>');
+        s = m[2].trim(); continue;
+      }
+      if((m = s.match(/^space\s+(\S+)(.*)$/))){
+        out.push('<div style="height:'+esc(m[1])+'" data-wltag="space"></div>');
+        s = m[2].trim(); continue;
+      }
+      if((m = s.match(/^line\b(.*)$/))){
+        out.push('<hr data-wltag="line">');
+        s = m[1].trim(); continue;
+      }
+      if((m = s.match(/^loading\b(.*)$/))){
+        out.push('<div class="wl-spinner" data-wltag="loading"></div>');
+        s = m[1].trim(); continue;
+      }
+      if((m = s.match(/^clock\b(.*)$/))){
+        out.push('<span class="wl-clock" data-wltag="clock"></span>');
+        s = m[1].trim(); continue;
+      }
+      // unknown
+      var first = s.match(/^\S+/);
+      warnings.push('BTW: unknown tag "'+(first?first[0]:s)+'" · skipped'+(/^h[1-6]$/i.test(first?first[0]:'')?' · headings are written t.1 to t.6':''));
+      s = '';
+    }
+  }
+
+  lines.forEach(parseLine);
+  while(stack.length) out.push(stack.pop());
+  return {html: out.join('\n'), title: title, theme: themeInit};
+}
+
+// ---------- STW -> CSS ----------
+var STW_PROPS = {
+  'c':'color',
+  'b.c':'background-color','b.co':'background-color','b.col':'background-color',
+  'b.i':'background-image','b.im':'background-image','b.ima':'background-image',
+  'f.f':'font-family','f.fa':'font-family','f.fam':'font-family',
+  'f.s':'font-size','f.si':'font-size','f.siz':'font-size',
+  'f.st':'font-style','f.sty':'font-style',
+  'f.w':'font-weight','f.we':'font-weight','f.wei':'font-weight',
+  't.a':'text-align','t.al':'text-align','t.ali':'text-align',
+  't.d':'text-decoration','t.de':'text-decoration','t.dec':'text-decoration',
+  'l.h':'line-height','l.he':'line-height','l.hei':'line-height',
+  'l.s':'letter-spacing','l.sp':'letter-spacing','l.spa':'letter-spacing',
+  'm':'margin',
+  'm.t':'margin-top','m.to':'margin-top','m.top':'margin-top',
+  'm.b':'margin-bottom','m.bo':'margin-bottom','m.bot':'margin-bottom',
+  'm.l':'margin-left','m.le':'margin-left','m.lef':'margin-left',
+  'm.r':'margin-right','m.ri':'margin-right','m.rig':'margin-right',
+  'p':'padding',
+  'p.t':'padding-top','p.to':'padding-top','p.top':'padding-top',
+  'p.b':'padding-bottom','p.bo':'padding-bottom','p.bot':'padding-bottom',
+  'b':'border',
+  'b.r':'border-radius','b.ra':'border-radius','b.rad':'border-radius',
+  'b.w':'border-width','b.wi':'border-width','b.wid':'border-width',
+  'w':'width','h':'height','d':'display','o':'opacity',
+  'b.s':'box-shadow','b.sh':'box-shadow','b.sha':'box-shadow',
+  'z.i':'z-index','z.in':'z-index','z.ind':'z-index',
+  'pos':'position','bg.co':'background-color','bd.co':'border-color'
+};
+// One official shortcode per property (WebLang v1.1). Older aliases still compile but warn.
+var STW_OFFICIAL = {
+  'c':'color','bg':'background-color','bg.i':'background-image','bd':'border-color','o':'opacity',
+  'f.f':'font-family','f.si':'font-size','f.st':'font-style','f.w':'font-weight',
+  't.a':'text-align','t.d':'text-decoration','t.t':'text-transform','l.h':'line-height','l.s':'letter-spacing',
+  'm':'margin','m.t':'margin-top','m.b':'margin-bottom','m.l':'margin-left','m.r':'margin-right',
+  'p':'padding','p.t':'padding-top','p.b':'padding-bottom','p.l':'padding-left','p.r':'padding-right','g':'gap',
+  'w':'width','h':'height','mw':'min-width','xw':'max-width','mh':'min-height','xh':'max-height',
+  'b':'border','b.w':'border-width','b.st':'border-style','b.r':'border-radius','sh':'box-shadow',
+  'd':'display','pos':'position','t':'top','bo':'bottom','le':'left','ri':'right','z':'z-index',
+  'fl.d':'flex-direction','j.c':'justify-content','a.i':'align-items','ov':'overflow',
+  'tr':'transition','tf':'transform','cu':'cursor'
+};
+Object.keys(STW_OFFICIAL).forEach(function(k){ STW_PROPS[k]=STW_OFFICIAL[k]; });
+function stwSuggest(prop){
+  for(var k in STW_OFFICIAL){ if(STW_OFFICIAL[k]===prop) return k; }
+  return null;
+}
+var STW_SELECTORS = {
+  body:'body', btn:'.wl-btn', card:'.wl-card', box:'.wl-box', row:'.wl-row',
+  col:'.wl-col', grid:'.wl-grid', center:'.wl-center', badge:'.wl-badge',
+  header:'header', footer:'footer', nav:'nav', section:'section', aside:'aside',
+  form:'form', input:'input', img:'img', a:'a',
+  't.1':'h1','t.2':'h2','t.3':'h3','t.4':'h4','t.5':'h5','t.6':'h6', p:'p'
+};
+
+function compileSTW(src, warnings){
+  var css = [];
+  function decls(body, slide){
+    var out = [], re = /\[([^\]:]+):([^\]]*)\]/g, mm;
+    while((mm = re.exec(body))){
+      var key = mm[1].trim(), prop = STW_PROPS[key];
+      if(slide && key === 'bc') prop = 'background-color';
+      else {
+        if(!prop){ warnings.push('STW: unknown property "' + key + '" · skipped'); continue; }
+        if(!STW_OFFICIAL.hasOwnProperty(key)){ warnings.push('STW: "' + key + '" is an old shortcode for ' + prop + ' · use "' + stwSuggest(prop) + '"'); }
+      }
+      var val = mm[2].trim();
+      if(prop === 'background-image' && !/^url\(/.test(val)) val = 'url(' + val + ')';
+      out.push(prop + ':' + val);
+    }
+    return out;
+  }
+  src.split(/\r?\n/).forEach(function(raw){
+    var line = raw.trim();
+    if(!line) return;
+    var sm = line.match(/^slide\s+id\s*=\s*(\d+)\s*\((.*)\)\s*;?$/);
+    if(sm){
+      var sd = decls(sm[2], true);
+      if(sd.length) css.push('.wl-slide[data-slide="' + sm[1] + '"]{' + sd.join(';') + '}');
+      return;
+    }
+    var m = line.match(/^([\w.\-#]+)\s*\((.*)\)\s*;?$/);
+    if(!m){ warnings.push('STW: could not read line "' + line.slice(0, 40) + '"'); return; }
+    var sel = STW_SELECTORS[m[1]] || m[1];
+    var d = decls(m[2], false);
+    if(d.length) css.push(sel + '{' + d.join(';') + '}');
+  });
+  return css.join('\n');
+}
+
+// ---------- MTWC -> JS ----------
+function compileMTWC(src, warnings){
+  var rawLines = src.split(/\r?\n/);
+  // Split combined "x.id = N , connect to 'f':" lines
+  var lines = [];
+  rawLines.forEach(function(l){
+    var m = l.match(/^(\s*)([\w.]+)\.id\s*=\s*(\w+)\s*,\s*connect to\s*'[^']*'\s*:\s*$/);
+    if(m){ lines.push(m[1]+m[2]+'.id = '+m[3]); return; }
+    if(/connect to\s*'[^']*'\s*:\s*$/.test(l.trim())) return; // plain connect line: drop
+    lines.push(l);
+  });
+
+  var vars = [], actions = [], cur = null, pendingId = null, ev = null;
+  lines.forEach(function(l){
+    var t = l.trim();
+    if(!t) return;
+    var m;
+    if((m = t.match(/^var\s+(\w+)\s*=\s*(.+)$/))){ vars.push({name:m[1], expr:m[2]}); return; }
+    if((m = t.match(/^([\w.]+)\.id\s*=\s*(\w+)$/))){ pendingId = m[2]; return; }
+    if((m = t.match(/^action\((\w+)\)\s*$/))){ cur = {name:m[1], id:pendingId, event:null, tag:null, body:[]}; actions.push(cur); return; }
+    if((m = t.match(/^(inclick|inload|inhover|inleave|intype|insubmit|inscroll|inkey|inchange)\s+([\w.]+)\s*:\s*$/))){
+      if(cur){ cur.event = m[1]; cur.tag = m[2]; ev = cur; }
+      return;
+    }
+    if(cur){ cur.body.push(l); return; }
+    warnings.push('MTWC: could not place line "'+t.slice(0,40)+'" · skipped');
+  });
+
+  function getRef(e){
+    return e.replace(/\bget\s+input\.(\w+)/g,'wlGet("$1")').replace(/\bget\s+form\.(\w+)/g,'wlGetForm("$1")');
+  }
+  function pg(u){ return pageHref(u); }
+  function expr(e){
+    e = getRef(e.trim());
+    e = e.replace(/random\(\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/g,
+      '(Math.floor(Math.random()*($2-$1+1))+$1)');
+    e = e.replace(/\((\w+)\)/g, 'S.$1');
+    e = e.replace(/\bnow\b/g, '(new Date().toLocaleTimeString())');
+    e = e.replace(/\btoday\b/g, '(new Date().toLocaleDateString())');
+    return e;
+  }
+  function cond(c){
+    c = getRef(c.trim().replace(/:$/,''));
+    c = c.replace(/\band\b/g,'&&').replace(/\bor\b/g,'||');
+    c = c.replace(/\bnot\b/g,'!');
+    c = c.replace(/\((\w+)\)/g,'S.$1');
+    c = c.replace(/([^=!<>])=([^=])/g,'$1==$2');
+    return c;
+  }
+  function interp(str){
+    // "Count: (count)" -> "Count: "+S.count+"
+    return '"'+str.replace(/"/g,'\\"').replace(/\{get input\.(\w+)\}/g,'"+wlGet("$1")+"').replace(/\{get form\.(\w+)\}/g,'"+wlGetForm("$1")+"').replace(/\((\w+)\)/g,'"+S.$1+"')+'"';
+  }
+  function selFor(tag, id){
+    if(id) return "document.querySelector('[data-wlid=\""+id+"\"]')";
+    if(tag==='page') return 'document.body';
+    return "document.querySelectorAll('[data-wltag=\""+tag+"\"]')";
+  }
+  function eachSel(tag){ return "document.querySelectorAll('[data-wltag=\""+tag+"\"]')"; }
+
+  function translateBody(body){
+    var js = [], stack = [];
+    function closeBlocks(level){
+      while(stack.length && level <= stack[stack.length-1]){
+        js.push('}'); stack.pop();
+      }
+    }
+    body.forEach(function(l){
+      var indent = l.match(/^\s*/)[0].length;
+      var t = l.trim();
+      if(!t) return;
+      closeBlocks(indent);
+      var m;
+      if((m = t.match(/^if\s+(.+):$/))){ js.push('if('+cond(m[1])+'){'); stack.push(indent); return; }
+      if((m = t.match(/^else\s+if\s+(.+):$/))){ js.push('else if('+cond(m[1])+'){'); stack.push(indent); return; }
+      if((m = t.match(/^else\s*:?$/))){ js.push('else {'); stack.push(indent); return; }
+      if((m = t.match(/^\((\w+)\)\s*==\s*(.+)$/))){ js.push('S.'+m[1]+' = '+expr(m[2])+';'); return; }
+      if((m = t.match(/^theme\s+(dark|light)$/))){
+        js.push("document.body.classList.toggle('dark', "+(m[1]==='dark')+');'); return;
+      }
+      if((m = t.match(/^alert\s+(.+)$/))){
+        var av = m[1].trim();
+        js.push('alert('+(av[0]==='"'?interp(av.slice(1,-1)):expr(av))+');'); return;
+      }
+      if((m = t.match(/^(log|show)\s+(.+)$/))){
+        var lv = m[2].trim();
+        js.push('wlLog('+(lv[0]==='"'?interp(lv.slice(1,-1)):expr(lv))+');'); return;
+      }
+      if((m = t.match(/^set\s+([\w.]+)\s+"(.*)"$/))){
+        js.push(eachSel(m[1])+'.forEach(function(el){el.textContent = '+interp(m[2])+';});'); return;
+      }
+      if((m = t.match(/^(hide|reveal)\s+([\w.]+)$/))){
+        js.push(eachSel(m[2])+'.forEach(function(el){el.style.display = '+(m[1]==='hide'?"'none'":"''")+';});'); return;
+      }
+      if((m = t.match(/^color\s+([\w.]+)\s+"([^"]*)"$/))){
+        js.push(eachSel(m[1])+'.forEach(function(el){el.style.color = '+interp(m[2])+';});'); return;
+      }
+      if((m = t.match(/^size\s+([\w.]+)\s+"([^"]*)"$/))){
+        js.push(eachSel(m[1])+'.forEach(function(el){el.style.width = '+interp(m[2])+';});'); return;
+      }
+      if((m = t.match(/^class\s+(add|remove)\s+([\w.]+)\s+"([^"]*)"$/))){
+        js.push(eachSel(m[2])+'.forEach(function(el){el.classList.'+(m[1]==='add'?'add':'remove')+'("'+m[3]+'");});'); return;
+      }
+      if((m = t.match(/^clear\s+input\.(\w+)$/))){ js.push('wlClear("'+m[1]+'");'); return; }
+      if((m = t.match(/^clear\s+form\.(\w+)$/))){ js.push('wlClear("'+m[1]+'");'); return; }
+      if((m = t.match(/^save\s+(\w+)(?:\s+to\s+'([^']*)')?$/))){ js.push('wlSave("'+(m[2]||'').replace(/\.\w+$/,'')+'","'+m[1]+'",S.'+m[1]+');'); return; }
+      if((m = t.match(/^load\s+(\w+)(?:\s+from\s+'([^']*)')?$/))){ js.push('S.'+m[1]+' = wlLoad("'+(m[2]||'').replace(/\\.\\w+$/,'')+'","'+m[1]+'",S.'+m[1]+');'); return; }
+      if((m = t.match(/^go\s+'([^']*)'$/))){ js.push('wlGo('+JSON.stringify(pg(m[1]))+');'); return; }
+      if(t === 'back'){ js.push('history.back();'); return; }
+      if(t === 'reload'){ js.push('location.reload();'); return; }
+      if((m = t.match(/^open\s+'([^']*)'$/))){ js.push('window.open('+JSON.stringify(m[1])+',"_blank");'); return; }
+      if((m = t.match(/^run\\((\\w+)\\)$/))){ js.push('ACTIONS.'+m[1]+' && ACTIONS.'+m[1]+'();'); return; }
+      if((m = t.match(/^repeat\((\d+)\):$/))){ js.push('for(var ri=0;ri<'+m[1]+';ri++){'); stack.push(indent); return; }
+      if((m = t.match(/^end$/))){ closeBlocks(0); return; }
+      warnings.push('MTWC: unsupported statement "'+t.slice(0,40)+'" · skipped');
+    });
+    closeBlocks(0);
+    return js.join('\n');
+  }
+
+  var js = [];
+  js.push('var S = window.S = {};');
+  vars.forEach(function(v){ js.push('S.'+v.name+' = '+expr(v.expr)+';'); });
+  js.push('var ACTIONS = {};');
+  actions.forEach(function(a){
+    js.push('ACTIONS.'+a.name+' = function(){\n'+translateBody(a.body)+'\n};');
+  });
+  // event wiring
+  actions.forEach(function(a){
+    if(!a.event) return;
+    var evMap = {inclick:'click', inhover:'mouseover', inleave:'mouseout', intype:'input', inchange:'change'};
+    if(a.event === 'inkey'){ js.push('document.addEventListener("keydown",function(e){if(e.key==="'+String(a.tag).replace(/"/g,'')+'")ACTIONS.'+a.name+'();});'); return; }
+    if(a.event === 'inload'){ js.push('ACTIONS.'+a.name+'();'); return; }
+    if(a.event === 'insubmit'){
+      js.push("document.querySelectorAll('form').forEach(function(f){f.addEventListener('submit',function(e){e.preventDefault();ACTIONS."+a.name+"();});});");
+      return;
+    }
+    var domEv = evMap[a.event];
+    if(!domEv){ warnings.push('MTWC: event "'+a.event+'" not supported yet · skipped'); return; }
+    var sel = selFor(a.tag, a.id);
+    if(a.id){
+      js.push('(function(el){if(el){el.addEventListener("'+domEv+'",ACTIONS.'+a.name+');}else{console.warn("WebLang: no element with id '+a.id+'");}})('+sel+');');
+    } else {
+      js.push(sel+'.forEach(function(el){el.addEventListener("'+domEv+'",ACTIONS.'+a.name+');});');
+    }
+  });
+  return js.join('\n');
+}
+
+// ---------- shared context (virtual files, IFW) ----------
+var CTX = {files:{}, useBlob:true, ifwSvg:null, ifwRef:false};
+function fileText(name){ var f = CTX.files[name]; return (f && typeof f.text === 'string') ? f.text : null; }
+function fileUrl(name){ var f = CTX.files[name]; return (CTX.useBlob && f && f.url) ? f.url : name; }
+function showOpts(str){ var o = {}, m, re = /\[([a-z]+)\]/g; while((m = re.exec(str))) o[m[1]] = true; return o; }
+function cssSafe(v){ return String(v).replace(/[;{}<>"'\\]/g, ''); }
+function num(v, d){ var n = parseFloat(v); return isNaN(n) ? d : n; }
+function safeUrl(u){ return /^\s*(javascript|data|vbscript):/i.test(u) ? '#' : u; }
+
+// ---------- IOTW -> data ----------
+function compileIOTW(src, warnings){
+  var s = src.replace(/^\s*link\b.*$/mg, '').replace(/^\s*#.*$/mg, ''), i = 0, root = {}, acts = [];
+  function ws(){ while(i < s.length && /\s/.test(s[i])) i++; }
+  function parseBlock(path){
+    i++;
+    var obj = {};
+    for(;;){
+      ws();
+      if(i >= s.length){ warnings.push('IOTW: missing closing )'); return obj; }
+      if(s[i] === ')'){ i++; return obj; }
+      if(s[i] === ','){ i++; continue; }
+      var m = /^([A-Za-z_]\w*)\s*:/.exec(s.slice(i, i + 80));
+      if(!m){
+        warnings.push('IOTW: could not read "' + s.slice(i, i + 20).split('\n')[0] + '" · skipped');
+        while(i < s.length && s[i] !== ',' && s[i] !== ')') i++;
+        continue;
+      }
+      var key = m[1]; i += m[0].length; ws();
+      var p = path ? path + '.' + key : key, v, mm;
+      if(s[i] === '('){ v = parseBlock(p); }
+      else if((mm = /^\[act:(\w+)\]/.exec(s.slice(i, i + 40)))){ acts.push({path:p, act:mm[1], key:key}); v = ''; i += mm[0].length; }
+      else if(s[i] === '"'){ var e = s.indexOf('"', i + 1); if(e < 0) e = s.length; v = s.slice(i + 1, e); i = e + 1; }
+      else {
+        var e2 = i; while(e2 < s.length && s[e2] !== ',' && s[e2] !== ')') e2++;
+        var raw = s.slice(i, e2).trim(); i = e2;
+        v = /^-?\d+(\.\d+)?$/.test(raw) ? parseFloat(raw) : raw === 'true' ? true : raw === 'false' ? false : raw;
+      }
+      obj[key] = v;
+    }
+  }
+  while(i < s.length){
+    ws();
+    if(i >= s.length) break;
+    if(s[i] === '('){ var b = parseBlock(''); for(var k in b) root[k] = b[k]; }
+    else { warnings.push('IOTW: data must be inside ( ) · skipped "' + s.slice(i, i + 20).split('\n')[0] + '"'); while(i < s.length && s[i] !== '(' && s[i] !== '\n') i++; }
+  }
+  var js = 'window.DATA = ' + JSON.stringify(root).replace(/</g, '\\u003c') + ';\n';
+  acts.forEach(function(a){
+    js += 'if(ACTIONS.' + a.act + '){ACTIONS.' + a.act + '();}else{console.warn("WebLang: no action ' + a.act + '");}\n' +
+          'wlSetPath(window.DATA,' + JSON.stringify(a.path) + ',S.' + a.key + ');\n';
+  });
+  return {js: js, acts: acts, data: root};
+}
+
+// ---------- MOTW -> BTW tags ----------
+function compileMOTW(src, warnings){
+  var vars = {}, mode = null;
+  src.split(/\r?\n/).forEach(function(raw){
+    var l = raw.trim(); if(!l || l[0] === '#') return;
+    var m;
+    if(/^link\b/.test(l)) return;
+    if((m = l.match(/^make\s+it\s*\((PHP|MTWC)\)\s*(#.*)?$/i))){ mode = m[1].toUpperCase(); return; }
+    if((m = l.match(/^make\s+var\((\d+)\)\s*=\s*(show_vid|show_img|show_text)\s+"((?:[^"\\]|\\.)*)"\s*(#.*)?$/))){
+      var n = parseInt(m[1], 10);
+      if(vars[n]) warnings.push('MOTW: var(' + n + ') is used twice · the later one wins');
+      vars[n] = {k:m[2], v:m[3]}; return;
+    }
+    warnings.push('MOTW: could not read line "' + l.slice(0, 40) + '" · check the quotes');
+  });
+  var keys = Object.keys(vars).map(Number).sort(function(a, b){ return a - b; });
+  if(mode === null && keys.length) warnings.push('MOTW: missing "make it (PHP)" or "make it (MTWC)"');
+  return keys.map(function(n){
+    var v = vars[n], val = v.v.replace(/"/g, "'");
+    if(v.k === 'show_vid') return 'vid: ' + val.replace(/\s/g, '%20');
+    if(v.k === 'show_img') return 'img: ' + val.replace(/\s/g, '%20');
+    return 'p "' + val + '"';
+  }).join('\n');
+}
+
+// ---------- IFW -> SVG ----------
+function compileIFW(src, warnings){
+  var items = [];
+  src.split(/\r?\n/).forEach(function(raw){
+    var l = raw.trim(); if(!l || l[0] === '#') return;
+    var m = l.match(/^([a-z]+)\s*:\s*(.*)$/);
+    if(!m){ warnings.push('IFW: could not read line "' + l.slice(0, 40) + '"'); return; }
+    var shape = m[1], rest = m[2], a = {}, mm, t;
+    if((t = rest.match(/"([^"]*)"/))){ a.label = t[1]; rest = rest.replace(t[0], ' '); }
+    if((t = rest.match(/from\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)/))){ a.from = [parseFloat(t[1]), parseFloat(t[2])]; rest = rest.replace(t[0], ' '); }
+    if((t = rest.match(/\bto\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)/))){ a.to = [parseFloat(t[1]), parseFloat(t[2])]; rest = rest.replace(t[0], ' '); }
+    if((t = rest.match(/points\(([^)]*)\)/))){
+      a.points = t[1].trim().split(/\s+/).map(function(p){ var q = p.split(','); return [parseFloat(q[0]), parseFloat(q[1])]; });
+      rest = rest.replace(t[0], ' ');
+    }
+    var re = /\b([a-z]+)\s*[=:]\s*([^\s,]+)/g;
+    while((mm = re.exec(rest))) a[mm[1]] = mm[2];
+    rest = rest.replace(/\b([a-z]+)\s*[=:]\s*([^\s,]+)/g, ' ').replace(/^[\s,]+|[\s,]+$/g, '');
+    var c = esc(a.c || '#333333'), it = null;
+    if(shape === 'circle'){ var r = num(a.r, 50); it = {rel:1, w:2*r, h:2*r, x:a.x, y:a.y, draw:function(x, y){ return '<circle cx="' + (x + r) + '" cy="' + (y + r) + '" r="' + r + '" fill="' + c + '"/>'; }}; }
+    else if(shape === 'square'){ var s = num(a.s, 100); it = {rel:1, w:s, h:s, x:a.x, y:a.y, draw:function(x, y){ return '<rect x="' + x + '" y="' + y + '" width="' + s + '" height="' + s + '" fill="' + c + '"/>'; }}; }
+    else if(shape === 'rect'){ var w = num(a.w, 100), h = num(a.h, 50); it = {rel:1, w:w, h:h, x:a.x, y:a.y, draw:function(x, y){ return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + c + '"/>'; }}; }
+    else if(shape === 'triangle'){ var ts = num(a.s, 80); it = {rel:1, w:ts, h:ts, x:a.x, y:a.y, draw:function(x, y){ return '<polygon points="' + (x + ts / 2) + ',' + y + ' ' + (x + ts) + ',' + (y + ts) + ' ' + x + ',' + (y + ts) + '" fill="' + c + '"/>'; }}; }
+    else if(shape === 'star'){ var R = num(a.s, 50); it = {rel:1, w:2*R, h:2*R, x:a.x, y:a.y, draw:function(x, y){
+      var pts = [], k; for(k = 0; k < 10; k++){ var ang = -Math.PI / 2 + k * Math.PI / 5, rad = k % 2 ? R * 0.4 : R; pts.push((x + R + rad * Math.cos(ang)).toFixed(1) + ',' + (y + R + rad * Math.sin(ang)).toFixed(1)); }
+      return '<polygon points="' + pts.join(' ') + '" fill="' + c + '"/>'; }}; }
+    else if(shape === 'line'){
+      if(!a.from || !a.to){ warnings.push('IFW: line needs from(x,y) and to(x,y)'); return; }
+      var lw = num(a.w, 2);
+      it = {box:[Math.min(a.from[0], a.to[0]), Math.min(a.from[1], a.to[1]), Math.max(a.from[0], a.to[0]), Math.max(a.from[1], a.to[1])],
+        draw:function(){ return '<line x1="' + a.from[0] + '" y1="' + a.from[1] + '" x2="' + a.to[0] + '" y2="' + a.to[1] + '" stroke="' + esc(a.c || '#000000') + '" stroke-width="' + lw + '"/>'; }};
+    }
+    else if(shape === 'polygon'){
+      if(!a.points || a.points.length < 3){ warnings.push('IFW: polygon needs points(x,y x,y x,y)'); return; }
+      var xs = a.points.map(function(p){ return p[0]; }), ys = a.points.map(function(p){ return p[1]; });
+      it = {box:[Math.min.apply(null, xs), Math.min.apply(null, ys), Math.max.apply(null, xs), Math.max.apply(null, ys)],
+        draw:function(){ return '<polygon points="' + a.points.map(function(p){ return p.join(','); }).join(' ') + '" fill="' + c + '"/>'; }};
+    }
+    else if(shape === 'text'){
+      var fs = num(a.size || a.s, 16), tx = num(a.x, 0), ty = num(a.y, fs), label = a.label || '';
+      it = {box:[tx, ty - fs, tx + label.length * fs * 0.6, ty + fs * 0.3],
+        draw:function(){ return '<text x="' + tx + '" y="' + ty + '" fill="' + esc(a.c || '#000000') + '" font-size="' + fs + '" font-family="Arial,Helvetica,sans-serif">' + esc(label) + '</text>'; }};
+    }
+    else if(shape === 'path'){
+      var d = rest.replace(/[^MmLlHhVvCcSsQqTtAaZz0-9.,\s-]/g, '').trim();
+      if(!d){ warnings.push('IFW: path needs path data, for example path: M0,0 L50,50'); return; }
+      var nums = (d.match(/-?\d*\.?\d+/g) || []).map(parseFloat), px = [], py = [], q;
+      for(q = 0; q + 1 < nums.length; q += 2){ px.push(nums[q]); py.push(nums[q + 1]); }
+      it = {box:[Math.min.apply(null, px.concat([0])), Math.min.apply(null, py.concat([0])), Math.max.apply(null, px.concat([1])), Math.max.apply(null, py.concat([1]))],
+        draw:function(){ return '<path d="' + esc(d) + '" fill="none" stroke="' + esc(a.c || '#000000') + '" stroke-width="2"/>'; }};
+    }
+    else { warnings.push('IFW: unknown shape "' + shape + '" · skipped'); return; }
+    items.push(it);
+  });
+  if(!items.length) return null;
+  var xcur = 0, maxH = 0, parts = [], bb = [1e9, 1e9, -1e9, -1e9];
+  function grow(x0, y0, x1, y1){ bb[0] = Math.min(bb[0], x0); bb[1] = Math.min(bb[1], y0); bb[2] = Math.max(bb[2], x1); bb[3] = Math.max(bb[3], y1); }
+  items.forEach(function(it){ if(it.rel && it.y === undefined) maxH = Math.max(maxH, it.h); });
+  items.forEach(function(it){
+    if(it.rel){
+      var x = it.x === undefined ? undefined : num(it.x, 0), y = it.y === undefined ? undefined : num(it.y, 0);
+      if(x === undefined){ x = xcur; xcur += it.w + 10; }
+      if(y === undefined) y = maxH - it.h;
+      parts.push(it.draw(x, y)); grow(x, y, x + it.w, y + it.h);
+    } else { parts.push(it.draw()); grow(it.box[0], it.box[1], it.box[2], it.box[3]); }
+  });
+  var pad = 4, vx = Math.floor(bb[0]) - pad, vy = Math.floor(bb[1]) - pad, vw = Math.ceil(bb[2] - bb[0]) + 2 * pad, vh = Math.ceil(bb[3] - bb[1]) + 2 * pad;
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vx + ' ' + vy + ' ' + vw + ' ' + vh + '" width="' + vw + '" height="' + vh + '" style="max-width:100%;height:auto" data-wltag="ifw">' + parts.join('') + '</svg>';
+}
+
+// ---------- STF -> text viewer ----------
+function compileSTF(src, warnings){
+  var cfg = {font:'mono', size:'14px', color:null, bg:null, maxw:null}, out = [];
+  src.split(/\r?\n/).forEach(function(raw){
+    var l = raw.trim(); if(!l || l[0] === '#') return;
+    var m;
+    if(/^link\b/.test(l)) return;
+    if((m = l.match(/^(font|size|color|bg|maxw)\s+(.+)$/))){ cfg[m[1]] = m[2].trim(); return; }
+    if((m = l.match(/^show\s+(\S+)(.*)$/))){
+      var txt = fileText(m[1]);
+      if(txt === null){ warnings.push('STF: file "' + m[1] + '" not found · open it with Open files'); return; }
+      if(!/\.txt$/i.test(m[1])) warnings.push('STF: "' + m[1] + '" is not a .txt file');
+      var o = showOpts(m[2]);
+      var fam = {mono:"ui-monospace,Consolas,monospace", sans:"Arial,Helvetica,sans-serif", serif:"Georgia,'Times New Roman',serif"}[cfg.font] || cssSafe(cfg.font);
+      var st = 'font-family:' + fam + ';font-size:' + cssSafe(cfg.size) + ';' + (cfg.color ? 'color:' + cssSafe(cfg.color) + ';' : '') +
+        (cfg.bg ? 'background:' + cssSafe(cfg.bg) + ';' : '') + (cfg.maxw ? 'max-width:' + cssSafe(cfg.maxw) + ';margin:12px auto;' : '') +
+        'white-space:' + (o.wrap ? 'pre-wrap' : 'pre') + ';' + (o.scroll ? 'max-height:70vh;overflow:auto;' : 'overflow-x:auto;');
+      var lines = txt.replace(/\r\n?/g, '\n').replace(/\n$/, '').split('\n');
+      var body = o.linenums ? lines.map(function(x){ return '<span class="wl-ln">' + (esc(x) || ' ') + '</span>'; }).join('') : esc(lines.join('\n'));
+      out.push('<pre class="wl-stf' + (o.linenums ? ' ln' : '') + '" data-wltag="stf" style="' + st + '">' + body + '</pre>');
+      return;
+    }
+    warnings.push('STF: could not read line "' + l.slice(0, 40) + '"');
+  });
+  return out.join('\n');
+}
+
+// ---------- SMDF -> styled markdown ----------
+function mdSlug(t, used){
+  var b = t.toLowerCase().replace(/[^\w]+/g, '-').replace(/^-+|-+$/g, '') || 'section', s = b, n = 1;
+  while(used[s]){ s = b + '-' + (++n); }
+  used[s] = 1; return 'md-' + s;
+}
+function inlineMD(t, o){
+  t = esc(t);
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+  t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, function(a, alt, u){ return o.images ? '<img src="' + safeUrl(u) + '" alt="' + alt + '" style="max-width:100%">' : alt; });
+  t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function(a, tx, u){ return o.links ? '<a href="' + safeUrl(u) + '" target="_blank" rel="noopener">' + tx + '</a>' : tx; });
+  t = t.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>');
+  return t;
+}
+function highlight(code){
+  var re = /(\/\/[^\n]*|#[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|\b(\d+(?:\.\d+)?)\b|\b(function|var|let|const|if|else|for|while|return|class|import|from|def|new|true|false|null)\b/g;
+  var out = '', last = 0, m;
+  while((m = re.exec(code))){
+    out += esc(code.slice(last, m.index));
+    var cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'n' : 'k';
+    out += '<span class="hl-' + cls + '">' + esc(m[0]) + '</span>';
+    last = m.index + m[0].length;
+  }
+  return out + esc(code.slice(last));
+}
+function renderMD(text, o, warnings){
+  var lines = text.replace(/\r\n?/g, '\n').split('\n'), out = [], toc = [], used = {}, i = 0;
+  function listRe(l){ return l.match(/^\s*([-*+]|\d+\.)\s+(.*)$/); }
+  function blockStart(l){ return /^(#{1,6})\s+/.test(l) || /^```/.test(l) || /^\s*>/.test(l) || !!listRe(l) || /^(-{3,}|\*{3,}|_{3,})\s*$/.test(l); }
+  function cells(l){ return l.trim().replace(/^\||\|$/g, '').split('|').map(function(c){ return c.trim(); }); }
+  while(i < lines.length){
+    var l = lines[i], m;
+    if(!l.trim()){ i++; continue; }
+    if(/^```/.test(l)){
+      var code = []; i++;
+      while(i < lines.length && !/^```/.test(lines[i])){ code.push(lines[i]); i++; }
+      i++;
+      out.push('<pre class="wl-code"><code>' + (o.code ? highlight(code.join('\n')) : esc(code.join('\n'))) + '</code></pre>');
+      continue;
+    }
+    if((m = l.match(/^(#{1,6})\s+(.*?)\s*#*\s*$/))){
+      var id = mdSlug(m[2], used);
+      toc.push({lv:m[1].length, t:m[2], id:id});
+      out.push('<h' + m[1].length + ' id="' + id + '">' + inlineMD(m[2], o) + '</h' + m[1].length + '>');
+      i++; continue;
+    }
+    if(/^(-{3,}|\*{3,}|_{3,})\s*$/.test(l)){ out.push('<hr>'); i++; continue; }
+    if(/^\s*>/.test(l)){
+      var q = [];
+      while(i < lines.length && /^\s*>/.test(lines[i])){ q.push(lines[i].replace(/^\s*>\s?/, '')); i++; }
+      out.push('<blockquote>' + inlineMD(q.join(' '), o) + '</blockquote>'); continue;
+    }
+    if(o.tables && l.indexOf('|') >= 0 && i + 1 < lines.length && /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(lines[i + 1])){
+      var head = cells(l), rows = [];
+      i += 2;
+      while(i < lines.length && lines[i].trim() && lines[i].indexOf('|') >= 0){ rows.push(cells(lines[i])); i++; }
+      out.push('<table><thead><tr>' + head.map(function(c){ return '<th>' + inlineMD(c, o) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        rows.map(function(r){ return '<tr>' + r.map(function(c){ return '<td>' + inlineMD(c, o) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>');
+      continue;
+    }
+    if((m = listRe(l))){
+      var ordered = /\d/.test(m[1]), items = [];
+      while(i < lines.length && (m = listRe(lines[i])) && /\d/.test(m[1]) === ordered){ items.push(m[2]); i++; }
+      var tg = ordered ? 'ol' : 'ul';
+      out.push('<' + tg + '>' + items.map(function(x){ return '<li>' + inlineMD(x, o) + '</li>'; }).join('') + '</' + tg + '>');
+      continue;
+    }
+    var para = [];
+    while(i < lines.length && lines[i].trim() && !blockStart(lines[i])){ para.push(lines[i].trim()); i++; }
+    if(!para.length){ para.push(lines[i].trim()); i++; }
+    out.push('<p>' + inlineMD(para.join(' '), o) + '</p>');
+  }
+  if(o.toc){
+    if(!toc.length) warnings.push('SMDF: [toc] used but the file has no headings');
+    else out.unshift('<nav class="wl-toc"><b>Contents</b><ul>' + toc.map(function(h){ return '<li style="margin-left:' + (h.lv - 1) * 14 + 'px"><a href="#' + h.id + '">' + inlineMD(h.t, {}) + '</a></li>'; }).join('') + '</ul></nav>');
+  }
+  return out.join('\n');
+}
+function compileSMDF(src, warnings){
+  var theme = 'light', maxw = null, out = [];
+  src.split(/\r?\n/).forEach(function(raw){
+    var l = raw.trim(); if(!l || l[0] === '#') return;
+    var m;
+    if(/^link\b/.test(l)) return;
+    if((m = l.match(/^theme\s+(dark|light)$/))){ theme = m[1]; return; }
+    if((m = l.match(/^maxw\s+(.+)$/))){ maxw = m[1].trim(); return; }
+    if((m = l.match(/^show\s+(\S+)(.*)$/))){
+      var t = fileText(m[1]);
+      if(t === null){ warnings.push('SMDF: file "' + m[1] + '" not found · open it with Open files'); return; }
+      if(!/\.md$/i.test(m[1])) warnings.push('SMDF: "' + m[1] + '" is not a .md file');
+      var o = showOpts(m[2]);
+      out.push('<div class="wl-md' + (theme === 'dark' ? ' dark' : '') + '" data-wltag="smdf" style="' + (maxw ? 'max-width:' + cssSafe(maxw) + ';' : '') + (o.scroll ? 'max-height:70vh;overflow:auto;' : '') + '">' + renderMD(t, o, warnings) + '</div>');
+      return;
+    }
+    warnings.push('SMDF: could not read line "' + l.slice(0, 40) + '"');
+  });
+  return out.join('\n');
+}
+
+// ---------- SSITW -> slide deck ----------
+var DECK_JS = '(function(){var d=document.getElementById("wl-deck");if(!d)return;var s=[].slice.call(d.querySelectorAll(".wl-slide")),i=0,c=d.querySelector(".wl-count");' +
+  'function show(n){i=Math.max(0,Math.min(s.length-1,n));s.forEach(function(x,k){x.style.display=k===i?"flex":"none";});c.textContent=(i+1)+" / "+s.length;}' +
+  'd.querySelector(".wl-prev").addEventListener("click",function(){show(i-1);});d.querySelector(".wl-next").addEventListener("click",function(){show(i+1);});' +
+  'document.addEventListener("keydown",function(e){if(e.key==="ArrowRight")show(i+1);if(e.key==="ArrowLeft")show(i-1);});show(0);})();';
+function compileSSITW(src, warnings){
+  var slides = [], text = src.replace(/^\s*#.*$/mg, ''), re = /(^|[\s}])slide\s+(\d+)\s*\{/g, m;
+  if(/(^|[\s}])slide\s*\{/.test(text)) warnings.push('SSITW: every slide needs a number, for example slide 1 { }');
+  while((m = re.exec(text))){
+    var open = m.index + m[0].length - 1, close = findClose(text, open);
+    if(close < 0){ warnings.push('SSITW: slide ' + m[2] + ' is missing a closing }'); close = text.length; }
+    var body = text.slice(open + 1, close)
+      .replace(/^[ \t]*title\s+"/mg, 't.2 "').replace(/^[ \t]*text\s+"/mg, 'p "').replace(/(^|\s)bullet\s*\{/g, '$1ul {');
+    slides.push({n: parseInt(m[2], 10), html: compileBTW(body, warnings).html});
+    re.lastIndex = close + 1;
+  }
+  if(!slides.length){ warnings.push('SSITW: no slides found · use slide 1 { ... }'); return null; }
+  var html = '<div class="wl-deck" id="wl-deck" data-wltag="deck">' + slides.map(function(s){ return '<section class="wl-slide" data-slide="' + s.n + '" data-wltag="slide">' + s.html + '</section>'; }).join('') +
+    '<div class="wl-deck-nav"><button class="wl-btn wl-prev" type="button">&#8249; Prev</button><span class="wl-count"></span><button class="wl-btn wl-next" type="button">Next &#8250;</button></div></div>';
+  return {html: html, js: DECK_JS};
+}
+
+// ---------- 3DS -> three.js scene ----------
+var THREE_BASE = 'https://cdn.jsdelivr.net/npm/three@0.160.0/';
+var RUNTIME3D = `import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+const spec = __SPEC__;
+const host = document.getElementById("wl-3d");
+try {
+  const W = host.clientWidth || 600, H = host.clientHeight || 420;
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(W, H);
+  host.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color("#10142a");
+  const clickables = [], spinners = [];
+  const loader = new GLTFLoader();
+  spec.objects.forEach(function (o) {
+    let obj;
+    if (o.type === "model") {
+      obj = new THREE.Group();
+      loader.load(o.url, function (g) { obj.add(g.scene); }, undefined, function () { if (window.wlLog) wlLog("3DS: could not load model " + o.file); });
+    } else {
+      let geo;
+      if (o.type === "cube") geo = new THREE.BoxGeometry(o.size, o.size, o.size);
+      else if (o.type === "sphere") geo = new THREE.SphereGeometry(o.r, 32, 16);
+      else if (o.type === "plane") { geo = new THREE.PlaneGeometry(o.w, o.h); geo.rotateX(-Math.PI / 2); }
+      else if (o.type === "cylinder") geo = new THREE.CylinderGeometry(o.r, o.r, o.h, 32);
+      else if (o.type === "cone") geo = new THREE.ConeGeometry(o.r, o.h, 32);
+      else geo = new THREE.TorusGeometry(o.r, o.t, 16, 48);
+      obj = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: o.c || "#9aa4c0", side: o.type === "plane" ? THREE.DoubleSide : THREE.FrontSide }));
+    }
+    obj.position.set(o.pos[0], o.pos[1] + (o.type === "plane" ? spec.floorY : 0), o.pos[2]);
+    obj.rotation.y = THREE.MathUtils.degToRad(o.rotY || 0);
+    if (o.spin) spinners.push(obj);
+    if (o.click) clickables.push(obj);
+    scene.add(obj);
+  });
+  spec.lights.forEach(function (l) {
+    let L;
+    if (l.type === "point") { L = new THREE.PointLight(0xffffff, 2, 0, 0); L.position.set(l.x, l.y, l.z); }
+    else {
+      L = new THREE.DirectionalLight(l.type === "sun" ? 0xfff2d6 : 0xffffff, l.type === "sun" ? 2.6 : 2);
+      const P = { top: [0, 600, 1], front: [0, 0, 600], side: [600, 0, 0], sun: [300, 500, 200] }[l.type] || [0, 600, 1];
+      L.position.set(P[0], P[1], P[2]);
+    }
+    scene.add(L);
+  });
+  const cam = new THREE.PerspectiveCamera(50, W / H, 1, 20000);
+  const d = spec.dist;
+  const C = { front: [0, 0, d], top: [0, d, 0.01], side: [d, 0, 0], orbit: [d * 0.7, d * 0.5, d * 0.8], free: [d * 0.7, d * 0.5, d * 0.8] }[spec.camera] || [0, 0, d];
+  cam.position.set(C[0], C[1], C[2]);
+  cam.lookAt(0, 0, 0);
+  let controls = null;
+  if (spec.camera === "orbit" || spec.camera === "free") {
+    controls = new OrbitControls(cam, renderer.domElement);
+    controls.enableDamping = true;
+    controls.autoRotate = spec.camera === "orbit";
+    controls.autoRotateSpeed = 2;
+  }
+  const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+  renderer.domElement.addEventListener("click", function (e) {
+    const r = renderer.domElement.getBoundingClientRect();
+    mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(mouse, cam);
+    const hits = ray.intersectObjects(clickables, true);
+    if (hits.length) {
+      let o = hits[0].object;
+      while (o.parent && clickables.indexOf(o) < 0) o = o.parent;
+      o.scale.setScalar(o.scale.x > 1 ? 1 : 1.25);
+      if (window.wlLog) wlLog("3DS: clicked object");
+    }
+  });
+  function tick() {
+    requestAnimationFrame(tick);
+    spinners.forEach(function (o) { o.rotation.y += 0.01; });
+    if (controls) controls.update();
+    renderer.render(scene, cam);
+  }
+  tick();
+  window.__wl3d = { objects: spec.objects.length, camera: spec.camera };
+} catch (err) {
+  host.textContent = "3D could not start: " + err.message;
+}`;
+function compile3DS(src, warnings){
+  var text = src.replace(/^\s*#.*$/mg, ''), m = /(^|[\s;])scene\s*\{/.exec(text);
+  if(!m){ warnings.push('3DS: no scene { } found · nothing to show'); return null; }
+  var open = m.index + m[0].length - 1, close = findClose(text, open);
+  if(close < 0){ warnings.push('3DS: scene is missing a closing }'); close = text.length; }
+  var objs = [], lights = [], cam = null, last = null, palette = ['#ff4d4d', '#4d79ff', '#4dff88', '#ffd24d', '#ff4dd2', '#4dffff'], pi = 0;
+  function kv(str){ var o = {}, mm, re = /([a-z]+)\s*[=:]\s*([^\s,\]]+)/g; while((mm = re.exec(str))) o[mm[1]] = mm[2]; return o; }
+  text.slice(open + 1, close).split(/\r?\n/).forEach(function(raw){
+    var l = raw.trim(); if(!l) return;
+    var t = l.match(/^([a-z]+)\s*:\s*(.*)$/);
+    if(!t){ warnings.push('3DS: could not read line "' + l.slice(0, 40) + '"'); return; }
+    var kind = t[1], rest = t[2], flags = showOpts(rest), k = kv(rest), c = k.c || palette[pi++ % palette.length], o;
+    if(kind === 'cube'){ o = {type:'cube', size:num(k.size || k.s, 100)}; }
+    else if(kind === 'sphere'){ o = {type:'sphere', r:num(k.r, 50)}; }
+    else if(kind === 'plane'){ o = {type:'plane', w:num(k.w, 500), h:num(k.h, 500)}; c = k.c || '#555a73'; }
+    else if(kind === 'cylinder'){ o = {type:'cylinder', r:num(k.r, 30), h:num(k.h, 100)}; }
+    else if(kind === 'cone'){ o = {type:'cone', r:num(k.r, 30), h:num(k.h, 80)}; }
+    else if(kind === 'torus'){ o = {type:'torus', r:num(k.r, 50), t:num(k.t, 10)}; }
+    else if(kind === 'model'){
+      var f = rest.trim().split(/\s+/)[0] || '';
+      if(!f || f[0] === '['){ warnings.push('3DS: model needs a file name, for example model: car.glb'); return; }
+      o = {type:'model', file:f, url:fileUrl(f)};
+      if(!fileText(f) && !(CTX.files[f] && CTX.files[f].url)) warnings.push('3DS: model "' + f + '" is loaded from its path · open it with Open files to preview it');
+    }
+    else if(kind === 'light'){
+      var lw = (rest.trim().split(/\s+/)[0] || '').toLowerCase();
+      if(['top', 'front', 'side', 'sun', 'point', 'none'].indexOf(lw) < 0){ warnings.push('3DS: unknown light "' + lw + '" · use top, front, side, sun, point or none'); return; }
+      if(lw !== 'none') lights.push({type:lw, x:num(k.x, 0), y:num(k.y, 200), z:num(k.z, 200)});
+      return;
+    }
+    else if(kind === 'camera'){
+      var cw = (rest.trim().split(/\s+/)[0] || '').toLowerCase();
+      if(['front', 'top', 'side', 'orbit', 'free'].indexOf(cw) < 0){ warnings.push('3DS: unknown camera "' + cw + '" · use front, top, side, orbit or free'); return; }
+      cam = cw; return;
+    }
+    else if(kind === 'rotate' || kind === 'move'){
+      if(!last){ warnings.push('3DS: ' + kind + ' needs an object above it'); return; }
+      if(kind === 'rotate'){ last.rotY = num(rest.trim().split(/\s+/)[0], 0); }
+      else { last.pos = [num(k.x, 0), num(k.y, 0), num(k.z, 0)]; }
+      return;
+    }
+    else { warnings.push('3DS: unknown tag "' + kind + '" · skipped'); return; }
+    o.c = c; o.pos = [0, 0, 0]; o.rotY = 0; o.spin = !!flags.spin; o.click = !!flags.click;
+    objs.push(o); last = o;
+  });
+  if(!objs.length) warnings.push('3DS: scene has no objects');
+  if(!lights.length) warnings.push('3DS: no light in the scene · it will look dark');
+  if(!cam){ warnings.push('3DS: no camera · using front'); cam = 'front'; }
+  var half = 0, ext = 0;
+  objs.forEach(function(o){
+    if(o.type === 'plane') return;
+    var hh = o.type === 'cube' ? o.size / 2 : o.type === 'sphere' ? o.r : o.type === 'torus' ? o.r + o.t : o.type === 'model' ? 50 : o.h / 2;
+    var ee = o.type === 'cube' ? o.size : o.type === 'sphere' ? o.r * 2 : o.type === 'torus' ? (o.r + o.t) * 2 : o.type === 'model' ? 100 : Math.max(o.r * 2, o.h);
+    half = Math.max(half, hh); ext = Math.max(ext, ee);
+  });
+  var spec = {objects:objs, lights:lights, camera:cam, dist:Math.max(300, (ext || 100) * 3.5), floorY:-(half || 50)};
+  var json = JSON.stringify(spec).replace(/</g, '\\u003c');
+  return {html:'<div class="wl-3d" id="wl-3d" data-wltag="scene3d"></div>', moduleJs:RUNTIME3D.replace('__SPEC__', function(){ return json; })};
+}
+
+
+// ---------- full page ----------
+var BASE_CSS = [
+  'body{font-family:Arial,Helvetica,sans-serif;margin:24px;background:#fff;color:#1a1d2e;line-height:1.6}',
+  'body.dark{background:#11142a;color:#eef0fa}',
+  'body.dark .wl-card{background:#1a1e38;border-color:rgba(255,255,255,.12)}',
+  '.wl-btn{display:inline-block;padding:10px 20px;border:none;border-radius:8px;background:#7c5cff;color:#fff;font-size:15px;cursor:pointer;margin:6px 4px;text-decoration:none}',
+  '.wl-btn:disabled{opacity:.5;cursor:default}',
+  '.wl-row{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;justify-content:center;margin:12px 0}',
+  '.wl-col{display:flex;flex-direction:column;gap:12px}',
+  '.wl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}',
+  '.wl-card{border:1px solid rgba(120,120,160,.25);border-radius:12px;padding:16px;background:#fff;flex:1;min-width:140px}',
+  '.wl-box{padding:8px}','.wl-header{padding:16px 0}','.wl-footer{padding:16px 0;color:#888;font-size:14px}',
+  '.wl-nav{display:flex;gap:16px}','.wl-section{margin:16px 0}','.wl-center{text-align:center}',
+  '.wl-badge{display:inline-block;background:#00d4ff;color:#06222b;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700;margin:4px}',
+  '.wl-spinner{width:28px;height:28px;border:3px solid #ccc;border-top-color:#7c5cff;border-radius:50%;animation:wlspin 1s linear infinite;margin:8px auto}',
+  '@keyframes wlspin{to{transform:rotate(360deg)}}',
+  'input,textarea,select{padding:8px 10px;border:1px solid #bbb;border-radius:8px;font-size:14px;margin:4px;display:block}',
+  'input[type=checkbox],input[type=radio]{display:inline-block}',
+  'blockquote{border-left:3px solid #7c5cff;padding-left:12px;color:#555}',
+  'mark{background:#ffe066}','code{background:#f0f0f6;padding:1px 6px;border-radius:5px}',
+  'body.dark code{background:#2a2e48}','hr{border:none;border-top:1px solid #ddd;margin:16px 0}',
+  'body.dark hr{border-color:#333}','table{border-collapse:collapse}','td,th{border:1px solid #ccc;padding:6px 12px}',
+  '.wl-tip{cursor:help;border-bottom:1px dotted #888}'
+].join('\n');
+
+var EXTRA_CSS = [
+  '.wl-stf{margin:12px 0;padding:12px;border-radius:8px;background:#f0f0f6;color:#1a1d2e;line-height:1.5}',
+  '.wl-stf.ln{counter-reset:ln}.wl-ln{display:block;counter-increment:ln}',
+  '.wl-ln:before{content:counter(ln);display:inline-block;width:3em;margin-right:1em;text-align:right;opacity:.5}',
+  '.wl-md{margin:12px auto;padding:16px 20px;border-radius:10px;background:#fff;color:#1a1d2e;border:1px solid rgba(120,120,160,.25);text-align:left;line-height:1.6}',
+  '.wl-md.dark{background:#11142a;color:#eef0fa;border-color:rgba(255,255,255,.12)}',
+  '.wl-md img{max-width:100%}.wl-md table{margin:10px 0}.wl-md ul,.wl-md ol{padding-left:1.4em;margin:8px 0}',
+  '.wl-md a{color:#5a3fe0}.wl-md.dark a{color:#8ecbff}.wl-md.dark code,.wl-md.dark .wl-code{background:#2a2e48}',
+  '.wl-code{background:#f0f0f6;padding:12px;border-radius:8px;overflow:auto;margin:10px 0}.wl-code code{background:none;padding:0}',
+  '.hl-c{color:#7a8299;font-style:italic}.hl-s{color:#2f9e5b}.hl-n{color:#d9730d}.hl-k{color:#7c5cff;font-weight:700}',
+  '.wl-toc{border:1px solid rgba(120,120,160,.3);border-radius:8px;padding:8px 14px;margin:10px 0}.wl-toc ul{list-style:none;padding:0;margin:6px 0 0}',
+  '.wl-3d{width:100%;height:420px;border-radius:10px;overflow:hidden;margin:12px 0;background:#10142a;color:#eef0fa;display:flex;align-items:center;justify-content:center}',
+  '.wl-3d canvas{display:block}',
+  '.wl-deck{margin:16px 0}',
+  '.wl-slide{min-height:340px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:36px 52px;background:#fff;color:#1a1d2e;border-radius:12px;border:1px solid rgba(120,120,160,.25);box-sizing:border-box;text-align:left}',
+  '.wl-slide h2{font-size:2.1em;margin:0 0 12px}.wl-slide ul{padding-left:1.4em}.wl-slide img,.wl-slide video{max-height:260px}',
+  '.wl-deck-nav{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:10px}'
+].join('\n');
+
+var JS_RUNTIME =
+  'function wlEl(id){return document.querySelector("[data-wlid=\\""+id+"\\"]");}\n' +
+  'function wlGet(id){var e=wlEl(id);return e?(e.type==="checkbox"?e.checked:e.value):"";}\n' +
+  'function wlGetForm(id){var f=wlEl(id),o=[];if(f)f.querySelectorAll("input,textarea,select").forEach(function(i){o.push((i.getAttribute("data-name")||i.name||"field")+": "+i.value);});return o.join(", ");}\n' +
+  'function wlClear(id){var e=wlEl(id);if(!e)return;if("value" in e)e.value="";else e.querySelectorAll("input,textarea").forEach(function(i){if(i.type==="checkbox"||i.type==="radio")i.checked=false;else i.value="";});}\n' +
+  'function wlSave(scope,name,val){try{localStorage.setItem("wl:"+scope+":"+name,JSON.stringify(val));}catch(e){wlLog("Save is not available here");}}\n' +
+  'function wlLoad(scope,name,def){try{var v=localStorage.getItem("wl:"+scope+":"+name);return v===null?def:JSON.parse(v);}catch(e){return def;}}\n' +
+  'function wlPath(o,p){return p.split(".").reduce(function(a,k){return a==null?a:a[k];},o);}\n' +
+  'function wlSetPath(o,p,v){var k=p.split("."),l=k.pop();k.forEach(function(x){o=o[x]=o[x]||{};});o[l]=v;}\n' +
+  'function wlBind(){document.querySelectorAll("[data-wlbind]").forEach(function(el){var p=el.getAttribute("data-wlbind"),v=wlPath(window.DATA||{},p);if(v===undefined)v=wlPath(window.S||{},p);el.textContent=(v===undefined||v===null)?"":v;});}\n';
+
+var SC_END = '</' + 'script>';
+
+// Compile every language into page parts. more = {iotw, motw, ifw, smdf, stf, d3, ssitw}
+function buildParts(btw, stw, mtwc, more, files, forExport){
+  more = more || {};
+  var warnings = [];
+  function has(k){ return more[k] && String(more[k]).trim().length > 0; }
+  CTX.files = files || {}; CTX.useBlob = !forExport; CTX.ifwSvg = null; CTX.ifwRef = false;
+  if(has('ifw')) CTX.ifwSvg = compileIFW(more.ifw, warnings);
+  var btwSrc = btw;
+  if(has('motw')){ var tags = compileMOTW(more.motw, warnings); if(tags) btwSrc += '\n' + tags; }
+  var b = compileBTW(btwSrc, warnings);
+  var c = compileSTW(stw, warnings);
+  var j = compileMTWC(mtwc, warnings);
+  var bhtml = b.html;
+  if(CTX.ifwSvg){
+    bhtml = bhtml.replace(/<img\s[^>]*src="[^"]*\.ifw"[^>]*>/g, function(){ CTX.ifwRef = true; return CTX.ifwSvg; });
+  } else if(/src="[^"]*\.ifw"/.test(bhtml)) warnings.push('BTW: an .ifw image is used but the image.ifw tab is empty');
+  if(has('iotw')) bhtml = bhtml.split(/(<[^>]*>)/).map(function(part){
+    return part.charAt(0) === '<' ? part : part.replace(/\{([A-Za-z_][\w.]*)\}/g, '<span data-wlbind="$1"></span>');
+  }).join('');
+  var body = [bhtml], jsParts = [j], tail = '', moduleJs = '', outFiles = {};
+  if(has('iotw')){
+    var io = compileIOTW(more.iotw, warnings);
+    io.acts.forEach(function(a){ if(!new RegExp('action\\(' + a.act + '\\)').test(mtwc)) warnings.push('IOTW: [act:' + a.act + '] has no action(' + a.act + ') in the MTWC file · the value stays empty'); });
+    jsParts.push(io.js);
+  }
+  if(has('smdf')){ var md = compileSMDF(more.smdf, warnings); if(md) body.push(md); }
+  if(has('stf')){ var tf = compileSTF(more.stf, warnings); if(tf) body.push(tf); }
+  if(CTX.ifwSvg){
+    outFiles['image.svg'] = CTX.ifwSvg.replace(' data-wltag="ifw"', '') + '\n';
+    if(!CTX.ifwRef) body.push(CTX.ifwSvg);
+  } else if(has('ifw')) warnings.push('IFW: nothing to draw');
+  if(has('d3')){ var d3 = compile3DS(more.d3, warnings); if(d3){ body.push(d3.html); moduleJs = d3.moduleJs; } }
+  if(has('ssitw')){ var dk = compileSSITW(more.ssitw, warnings); if(dk){ body.push(dk.html); tail += dk.js + '\n'; } }
+  return {title: b.title, theme: b.theme, css: BASE_CSS + '\n' + EXTRA_CSS + '\n' + c, body: body.join('\n'), js: jsParts.join('\n'), tail: tail,
+          moduleJs: moduleJs, files: outFiles, warnings: warnings};
+}
+
+function assemble(p, exportMode){
+  var logFn = exportMode ? 'function wlLog(m){console.log(m);}' : 'function wlLog(m){try{parent.postMessage({wl:"log",msg:String(m)},"*");}catch(e){console.log(m);}}';
+  var goFn = exportMode ? 'function wlGo(u){location.href=u;}' : 'function wlGo(u){wlLog("Go to "+u+" (works in the exported site)");}';
+  var js = logFn + '\n' + goFn + '\n' + JS_RUNTIME +
+    'try{\n' + p.js + '\n}catch(err){wlLog("Runtime error: "+err.message);}\n' +
+    'wlBind();\n' +
+    'function wlTick(){document.querySelectorAll(".wl-clock").forEach(function(el){el.textContent=new Date().toLocaleTimeString();});}\n' +
+    'wlTick();setInterval(wlTick,1000);\n' +
+    'document.querySelectorAll("form").forEach(function(f){f.addEventListener("submit",function(e){e.preventDefault();});});\n' + p.tail;
+  var mod = p.moduleJs ? '\n<script type="importmap">{"imports":{"three":"' + THREE_BASE + 'build/three.module.js","three/addons/":"' + THREE_BASE + 'examples/jsm/"}}' + SC_END +
+    '\n<script type="module">\n' + p.moduleJs + '\n' + SC_END : '';
+  var title = esc(p.title || 'WebLang page'), cls = p.theme === 'dark' ? ' class="dark"' : '';
+  if(exportMode){
+    return {html: '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + title +
+      '</title><link rel="stylesheet" href="style.css"></head><body' + cls + '>\n' + p.body + '\n<script src="script.js" defer>' + SC_END + mod + '\n</body></html>',
+      css: p.css + '\n', js: js + '\n'};
+  }
+  return {html: '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + title + '</title><style>' + p.css + '</style></head><body' + cls + '>\n' + p.body +
+    '\n<script>\n' + js + '\n' + SC_END + mod + '\n</body></html>'};
+}
+
+function buildPreview(btw, stw, mtwc, more, files){
+  var p = buildParts(btw, stw, mtwc, more, files, false);
+  var html = assemble(p, false).html;
+  Object.keys(files || {}).forEach(function(name){
+    var f = files[name];
+    if(f && f.url) html = html.split('src="' + name + '"').join('src="' + f.url + '"');
+  });
+  return {html: html, warnings: p.warnings};
+}
+
+// Separate-file export uses the same compiler and runtime as the live preview.
+function buildExport(btw, stw, mtwc, more, files){
+  var p = buildParts(btw, stw, mtwc, more, files, true);
+  var a = assemble(p, true), out = {'index.html': a.html, 'style.css': a.css, 'script.js': a.js};
+  Object.keys(p.files).forEach(function(k){ out[k] = p.files[k]; });
+  return {files: out, warnings: p.warnings};
+}
+
+global.WebLang = {compileBTW:compileBTW, compileSTW:compileSTW, compileMTWC:compileMTWC, compileIOTW:compileIOTW, compileMOTW:compileMOTW, compileIFW:compileIFW,
+  compileSMDF:compileSMDF, compileSTF:compileSTF, compileSSITW:compileSSITW, compile3DS:compile3DS, buildPreview:buildPreview, buildExport:buildExport};
+})(typeof window !== 'undefined' ? window : globalThis);
+
+// === UI GLUE ===
+if(typeof document !== 'undefined' && document.getElementById){
+(function(){
+  var EXTRA = [
+    ['iotw', 'data.iotw', 'link web.mtwc\n(Name : [act:S] , Age : 13)\n(profile : (Role : "Dev"))\n\n# In BTW text use {profile.Role} or {Name}\n# web.mtwc needs: action(S)\n#   (Name) == "Hazem"'],
+    ['motw', 'server.motw', 'link page.btw\nmake it (PHP)\nmake var(1) = show_vid "https://example.com/intro.mp4"\nmake var(2) = show_text "Welcome to my site"'],
+    ['ifw', 'image.ifw', 'circle: r=40 c=blue\ntext: "W" x=35 y=50 c=white'],
+    ['smdf', 'docs.smdf', 'theme dark\nmaxw 800px\nshow readme.md [toc] [code] [tables] [links]'],
+    ['stf', 'viewer.stf', 'font mono\nsize 14px\ncolor white\nbg black\nshow notes.txt [wrap] [scroll] [linenums]'],
+    ['d3', 'scene.3ds', 'scene {\n  plane: w=500 h=500 c=gray\n  cube: size=100 c=red [spin]\n  light: sun\n  camera: orbit\n}'],
+    ['ssitw', 'deck.ssitw', 'slide 1 {\n  title "Welcome"\n  text "My presentation"\n}\n\nslide 2 {\n  title "Why?"\n  bullet {\n    li "Simple"\n    li "Fast"\n  }\n}']
+  ];
+  var LANG_EXT = {btw:'btw', stw:'stw', mtwc:'mtwc', iotw:'iotw', motw:'motw', ifw:'ifw', smdf:'smdf', stf:'stf', '3ds':'d3', ssitw:'ssitw'};
+  var TEXT_EXT = ['md', 'txt'];
+  var BLOB_EXT = ['glb', 'gltf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'mp4', 'webm', 'mp3', 'wav', 'ogg'];
+  var edHost = document.querySelector('.ed');
+  var toolbar = document.querySelector('.toolbar');
+  var openBtn = document.getElementById('open-files');
+  var eds = {btw:document.getElementById('ed-btw'), stw:document.getElementById('ed-stw'), mtwc:document.getElementById('ed-mtwc')};
+  var placeholders = {};
+  EXTRA.forEach(function(e){
+    var ta = document.createElement('textarea');
+    ta.id = 'ed-' + e[0]; ta.style.display = 'none'; ta.spellcheck = false; ta.placeholder = e[2];
+    edHost.appendChild(ta); eds[e[0]] = ta; placeholders[e[0]] = e[2];
+  });
+  var filesPane = document.createElement('div');
+  filesPane.id = 'ed-files'; filesPane.style.cssText = 'display:none;flex:1;overflow:auto;padding:16px;background:var(--panel2);color:#d6def0;font-size:13.5px;line-height:1.7';
+  edHost.appendChild(filesPane); eds.files = filesPane;
+  var exBtn = document.createElement('button');
+  exBtn.className = 'tab'; exBtn.id = 'load-example'; exBtn.textContent = 'Load example';
+
+  var tabs = document.querySelectorAll('.tab[data-f]');
+  var con = document.getElementById('con');
+  var out = document.getElementById('out');
+  var activeTab = 'btw';
+
+  // Virtual files: .md and .txt are inlined at convert time, other assets are shown in the preview.
+  var files = {
+    'readme.md': {text:'# Hello from WebLang\n\nThis is a **markdown** file shown by SMDF.\n\n## Features\n\n- Headings and lists\n- `inline code` and links like [WebLang](https://hazemyt55.github.io/The-WebLang/)\n\n## Code\n\n```js\nconst name = "WebLang"; // a comment\nconsole.log(name, 42);\n```\n\n| Language | Replaces |\n|---|---|\n| BTW | HTML |\n| STW | CSS |\n\n> Open your own .md file with Open files to replace this one.\n', size:0},
+    'notes.txt': {text:'Plain text shown by STF.\nLine two is here.\nLine three is a much longer line so you can see how wrapping and scrolling work when it does not fit.\n', size:0}
+  };
+  Object.keys(files).forEach(function(k){ files[k].size = files[k].text.length; });
+  // === PROJECT FILES (sidebar, new file, viewer, saved in this browser) ===
+  var LANG_LABEL = {btw:'BTW', stw:'STW', mtwc:'MTWC', iotw:'IOTW', motw:'MOTW', ifw:'IFW', smdf:'SMDF', stf:'STF', d3:'3DS', ssitw:'SSITW'};
+  var EXT_OF = {}; Object.keys(LANG_EXT).forEach(function(k){ EXT_OF[LANG_EXT[k]] = k; });
+  var docs = {}, activeDoc = {btw:'page.btw', stw:'web.stw', mtwc:'web.mtwc'}, openName = 'page.btw';
+  EXTRA.forEach(function(e){ activeDoc[e[0]] = e[1]; });
+  Object.keys(activeDoc).forEach(function(k){ docs[activeDoc[k]] = {lang:k, text:null}; });
+  var created = {}, HIDE = {};
+  EXTRA.forEach(function(e){ HIDE[e[1]] = 1; });
+  var projStyle = document.createElement('style');
+  projStyle.textContent = 'body{height:100vh;height:100dvh}.main{grid-template-columns:1fr 1fr}' +
+    '#filebar{display:flex;align-items:center;gap:6px;padding:6px 8px 0;border-bottom:1px solid var(--line);background:var(--panel);flex:none}' +
+    '#ftabs{display:flex;gap:3px;overflow-x:auto;min-width:0;scrollbar-width:thin}' +
+    '.ft{display:inline-flex;align-items:center;gap:6px;padding:7px 8px 7px 12px;border-radius:8px 8px 0 0;background:var(--panel2);border:1px solid var(--line);border-bottom:none;color:var(--muted);font-family:ui-monospace,Consolas,monospace;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}' +
+    '.ft.on{color:var(--txt);background:rgba(124,92,255,.18);border-color:var(--acc1)}.ft .x{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 2px}.ft .x:hover{color:#f7768e}' +
+    '#fb-add{display:flex;align-items:center;gap:6px;padding-bottom:5px;flex:none}#fb-plus{padding:4px 12px;font-size:16px;line-height:1}' +
+    '#fb-name{display:none;width:150px;padding:5px 8px;border-radius:7px;border:1px solid var(--acc1);background:var(--panel2);color:var(--txt);font-family:ui-monospace,Consolas,monospace;font-size:13px;outline:none}#fb-msg{display:none;color:#f7768e;font-size:12px;max-width:340px;line-height:1.3}' +
+    '#ed-view{display:none;flex:1;overflow:auto;padding:16px;background:var(--panel2);color:#d6def0;text-align:center}#ed-view img,#ed-view video{max-width:100%;max-height:70vh;background:repeating-conic-gradient(#222 0 25%,#2a2a2a 0 50%) 50%/16px 16px;border-radius:8px}#ed-view .vn{margin-top:10px;color:var(--muted);font-size:12px}' +
+    '@media(max-width:800px){.main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr);min-height:0}.ed{border-right:none;border-bottom:1px solid var(--line)}nav{padding:6px 10px;flex-wrap:nowrap}.logo{width:auto;font-size:16px}nav a.nl{padding:4px 8px;font-size:13px}.toolbar{padding:6px 10px}.console{max-height:64px;padding:6px 10px}#filebar{flex-wrap:wrap;padding-bottom:0}#ftabs{flex:1 1 0}#fb-add{flex-wrap:wrap;flex:0 1 auto;max-width:100%}#fb-name{width:130px}#fb-msg{max-width:none;flex:1 1 100%}.ed,.pv{min-width:0}}';
+  document.head.appendChild(projStyle);
+  var bar = document.createElement('div'); bar.id = 'filebar';
+  bar.innerHTML = '<div id="ftabs"></div><div id="fb-add"><button class="tab" id="fb-plus" title="New file" aria-label="New file">+</button><input id="fb-name" placeholder="name.btw" autocomplete="off" spellcheck="false"><span id="fb-msg"></span></div>';
+  edHost.insertBefore(bar, edHost.firstChild);
+  var viewPane = document.createElement('div'); viewPane.id = 'ed-view'; edHost.appendChild(viewPane); eds.view = viewPane;
+  var fileTA = document.createElement('textarea'); fileTA.id = 'ed-filetext'; fileTA.style.display = 'none'; fileTA.spellcheck = false;
+  edHost.appendChild(fileTA); eds.filetext = fileTA;
+  var projReady = false;
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function isActive(n){ return docs[n] && activeDoc[docs[n].lang] === n; }
+  function getText(n){ var d = docs[n]; return isActive(n) ? eds[d.lang].value : (d.text || ''); }
+  function persist(){
+    if(!projReady) return;
+    try {
+      var d = {}, t = {};
+      Object.keys(docs).forEach(function(n){ d[n] = {lang:docs[n].lang, text:getText(n)}; });
+      Object.keys(files).forEach(function(n){ if(typeof files[n].text === 'string' && !files[n].blob) t[n] = files[n].text; });
+      localStorage.setItem('wl-project', JSON.stringify({docs:d, active:activeDoc, texts:t, created:created}));
+    } catch(e) {}
+  }
+  function fileIcon(n){ var x = n.split('.').pop().toLowerCase(); return /^(png|jpe?g|gif|webp|svg)$/.test(x) ? '🖼' : /^(mp4|webm)$/.test(x) ? '🎬' : /^(mp3|wav|ogg)$/.test(x) ? '🎵' : /^(glb|gltf)$/.test(x) ? '🧊' : '📄'; }
+  function isShown(n){ return !(docs[n] && HIDE[n] && created[n] !== true && !getText(n).trim()); }
+  function renderProject(){
+    var box = document.getElementById('ftabs'); if(!box) return;
+    box.innerHTML = '';
+    function tab(n, rm){
+      var r = document.createElement('div'); r.className = 'ft' + (openName === n ? ' on' : ''); r.title = n;
+      var nm = document.createElement('span'); nm.textContent = n; r.appendChild(nm);
+      var x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.title = 'Close ' + n; x.setAttribute('aria-label', 'Close ' + n);
+      x.addEventListener('click', function(e){ e.stopPropagation(); rm(n); });
+      r.appendChild(x);
+      r.addEventListener('click', function(){ openFile(n); });
+      box.appendChild(r);
+    }
+    Object.keys(docs).filter(isShown).forEach(function(n){ tab(n, removeDoc); });
+    Object.keys(files).forEach(function(n){ tab(n, removeAsset); });
+    persist();
+  }
+    function openFile(n){
+    openName = n;
+    if(docs[n]){ switchDoc(n); return; }
+    var f = files[n]; if(!f) return;
+    var ext = n.split('.').pop().toLowerCase();
+    if(typeof f.text === 'string'){
+      fileTA.value = f.text; fileTA.dataset.name = n;
+      selectTab('filetext');
+    } else {
+      var h = '';
+      if(/^(png|jpe?g|gif|webp|svg)$/.test(ext)) h = '<img src="' + f.url + '" alt="' + esc(n) + '">';
+      else if(/^(mp4|webm)$/.test(ext)) h = '<video src="' + f.url + '" controls></video>';
+      else if(/^(mp3|wav|ogg)$/.test(ext)) h = '<audio src="' + f.url + '" controls></audio>';
+      else h = '<p>3D model files are drawn by a .3ds scene. Add a line like <code>model: file=' + esc(n) + '</code> to use it.</p>';
+      viewPane.innerHTML = h + '<div class="vn">' + esc(n) + ' (' + (f.size || 0) + ' bytes)</div>';
+      selectTab('view');
+    }
+    renderProject();
+  }
+  function switchDoc(n, noRun){
+    var d = docs[n], k = d.lang, cur = activeDoc[k];
+    if(cur !== n){
+      docs[cur].text = eds[k].value;
+      eds[k].value = d.text || ''; d.text = null; activeDoc[k] = n;
+      var tab = document.querySelector('.tab[data-f="' + k + '"]'); if(tab) tab.textContent = n;
+      if(k === 'btw') pageName = n === 'page.btw' ? 'index' : (n.replace(/\.btw$/i, '').replace(/[^\w.\-]/g, '_') || 'index');
+    }
+    openName = n; selectTab(k); renderProject();
+    if(!noRun) run();
+  }
+  function addDoc(n, k, text){
+    if(docs[n]){ if(isActive(n)) eds[k].value = text; else docs[n].text = text; }
+    else docs[n] = {lang:k, text:text};
+    switchDoc(n, true);
+  }
+  function removeDoc(n){
+    var k = docs[n].lang, others = Object.keys(docs).filter(function(m){ return m !== n && docs[m].lang === k; });
+    if(!others.length){ if(HIDE[n]){ created[n] = false; docs[n].text = ''; if(isActive(n)) eds[k].value = ''; openName = activeDoc.btw; selectTab('btw'); renderProject(); run(); return; } log('Cannot close ' + n + ': it is the only ' + LANG_LABEL[k] + ' file. Clear its text instead, or create another ' + LANG_LABEL[k] + ' file first.', 'warn'); return; }
+    if(isActive(n)) switchDoc(others[0], true);
+    delete docs[n]; delete created[n]; if(openName === n) openName = activeDoc[k];
+    renderProject(); run();
+  }
+  function removeAsset(n){
+    if(files[n] && files[n].url) URL.revokeObjectURL(files[n].url);
+    delete files[n]; if(openName === n){ openName = activeDoc[activeTab] || 'page.btw'; selectTab(docs[openName] ? docs[openName].lang : 'btw'); }
+    renderFiles(); run();
+  }
+var ALLOWED = Object.keys(LANG_EXT).concat(TEXT_EXT).map(function(x){ return '.' + x; }).join(' ');
+  var fbName = document.getElementById('fb-name'), fbMsg = document.getElementById('fb-msg'), fbPlus = document.getElementById('fb-plus');
+  function fbErr(m){ fbMsg.textContent = m; fbMsg.style.display = 'inline'; log(m, 'err'); }
+  function newFile(rawName){
+    var raw = String(rawName || '').trim();
+    if(!raw){ fbErr('Type a name with its ending, for example page.btw'); return false; }
+    var name = raw.replace(/\s+/g, '_').replace(/[^\w.\-]/g, '_');
+    var m = name.match(/\.([A-Za-z0-9]+)$/);
+    if(!m){ fbErr('"' + raw + '" needs an ending so I know the language, for example ' + name + '.btw. Endings: ' + ALLOWED); return false; }
+    var ext = m[1].toLowerCase(); name = name.slice(0, name.length - ext.length) + ext;
+    var fmt = LANG_EXT[ext];
+    if(!fmt && TEXT_EXT.indexOf(ext) < 0){ fbErr('".' + ext + '" is not a WebLang ending. Use one of: ' + ALLOWED); return false; }
+    if(files[name] || (docs[name] && isShown(name))){ fbErr('A file named ' + name + ' already exists. Pick another name.'); return false; }
+    if(docs[name]){ created[name] = true; switchDoc(name, true); }
+    else if(fmt){ docs[name] = {lang:fmt, text:''}; created[name] = true; switchDoc(name, true); }
+    else { files[name] = {text:'', size:0}; renderFiles(); openFile(name); }
+    var ed = eds[docs[name] ? docs[name].lang : 'filetext']; if(ed && ed.focus) ed.focus();
+    return true;
+  }
+  function closeAdd(){ fbName.style.display = 'none'; fbMsg.style.display = 'none'; fbName.value = ''; }
+  fbPlus.addEventListener('click', function(){
+    if(fbName.style.display === 'inline-block'){ closeAdd(); return; }
+    fbName.style.display = 'inline-block'; fbMsg.style.display = 'none'; fbName.focus();
+  });
+  fbName.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ if(newFile(fbName.value)) closeAdd(); }
+    else if(e.key === 'Escape') closeAdd();
+    else fbMsg.style.display = 'none';
+  });
+  fileTA.addEventListener('input', function(){ var n = fileTA.dataset.name; if(files[n]){ files[n].text = fileTA.value; files[n].size = fileTA.value.length; persist(); } });
+  Object.keys(eds).forEach(function(k){ if(eds[k].tagName === 'TEXTAREA') eds[k].addEventListener('input', persist); });
+  (function restore(){
+    var s; try { s = JSON.parse(localStorage.getItem('wl-project') || 'null'); } catch(e) {}
+    if(!s || !s.docs) return;
+    created = s.created || {};
+    var saved = s.docs, act = s.active || {};
+    Object.keys(docs).forEach(function(n){ delete docs[n]; });
+    Object.keys(saved).forEach(function(n){ if(LANG_LABEL[saved[n].lang]) docs[n] = {lang:saved[n].lang, text:saved[n].text || ''}; });
+    Object.keys(activeDoc).forEach(function(k){
+      var n = act[k];
+      if(!n || !docs[n] || docs[n].lang !== k){ n = Object.keys(docs).filter(function(m){ return docs[m].lang === k; })[0]; }
+      if(!n){ n = activeDoc[k]; docs[n] = {lang:k, text:eds[k].value}; }
+      activeDoc[k] = n; eds[k].value = docs[n].text; docs[n].text = null;
+      var tab = document.querySelector('.tab[data-f="' + k + '"]'); if(tab) tab.textContent = n;
+    });
+    if(act.btw) pageName = activeDoc.btw === 'page.btw' ? 'index' : activeDoc.btw.replace(/\.btw$/i, '').replace(/[^\w.\-]/g, '_');
+    if(s.texts){ Object.keys(files).forEach(function(n){ delete files[n]; }); Object.keys(s.texts).forEach(function(n){ files[n] = {text:s.texts[n], size:s.texts[n].length}; }); }
+    openName = activeDoc.btw;
+  })();
+  function renderFiles(){
+    var names = Object.keys(files);
+    filesPane.innerHTML = '<div style="color:var(--muted);margin-bottom:10px">Files the languages can use. SMDF reads .md, STF reads .txt, 3DS shows .glb models and images or videos show in the preview. Add more with Open files.</div>';
+    names.forEach(function(n){
+      var row = document.createElement('div');
+      row.textContent = n + '  (' + (files[n].size || 0) + ' bytes)  ';
+      var rm = document.createElement('button');
+      rm.className = 'tab'; rm.textContent = 'remove'; rm.style.padding = '2px 8px';
+      rm.addEventListener('click', function(){ if(files[n].url) URL.revokeObjectURL(files[n].url); delete files[n]; renderFiles(); });
+      row.appendChild(rm); filesPane.appendChild(row);
+    });
+    renderProject();
+  }
+  projReady = true;
+  renderFiles();
+
+  tabs.forEach(function(t){ t.addEventListener('click', function(){ selectTab(t.dataset.f); }); });
+  function selectTab(k){
+    activeTab = k;
+    document.getElementById('exports').hidden = true; document.querySelector('.main').hidden = false;
+    document.querySelectorAll('.tab[data-f]').forEach(function(x){ x.classList.toggle('on', x.dataset.f === k); });
+    Object.keys(eds).forEach(function(key){ eds[key].style.display = (key === k) ? 'block' : 'none'; });
+  }
+  tabs = document.querySelectorAll('.tab[data-f]');
+  selectTab('btw');
+  exBtn.addEventListener('click', function(){
+    var ta = eds[activeTab];
+    if(placeholders[activeTab] && ta && !ta.value.trim()){
+      ta.value = placeholders[activeTab].replace(/^# .*$/mg, '').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+      run();
+    } else if(placeholders[activeTab]) log('This tab already has content, so the example was not loaded', 'warn');
+    else log('Examples are for the new language tabs. Open data.iotw, image.ifw, scene.3ds and the others.', 'warn');
+  });
+
+  function log(msg, cls){
+    var d = document.createElement('div');
+    d.className = cls || '';
+    d.textContent = msg;
+    con.appendChild(d);
+    con.scrollTop = con.scrollHeight;
+  }
+  function more(){
+    return {iotw:eds.iotw.value, motw:eds.motw.value, ifw:eds.ifw.value, smdf:eds.smdf.value, stf:eds.stf.value, d3:eds.d3.value, ssitw:eds.ssitw.value};
+  }
+
+  function fileWarn(w){
+    return String(w).replace(/^(BTW|STW|MTWC|IOTW|MOTW|IFW|SMDF|STF|SSITW|3DS):/, function(_, L){
+      var k; Object.keys(LANG_LABEL).forEach(function(x){ if(LANG_LABEL[x] === L) k = x; });
+      return (k && activeDoc[k] ? activeDoc[k] : L) + ':';
+    });
+  }
+  function run(){
+    con.innerHTML = '';
+    var r = WebLang.buildPreview(eds.btw.value, eds.stw.value, eds.mtwc.value, more(), files);
+    out.srcdoc = r.html;
+    if(r.warnings.length){
+      r.warnings.forEach(function(w){ log('⚠ ' + fileWarn(w), 'warn'); });
+    } else {
+      log('✓ Compiled with no warnings', 'ok');
+    }
+  }
+
+  var exportResult = null;
+  var selectedOutput = 'index.html';
+  var pageName = 'index';
+  var outputTabsBox = document.getElementById('output-tabs');
+  var types = {html:'text/html', css:'text/css', js:'text/javascript', svg:'image/svg+xml'};
+  function fileName(name){ return name === 'index.html' ? pageName + '.html' : name; }
+  function typeOf(name){ return types[name.split('.').pop()] || 'text/plain'; }
+  function buildOutputTabs(){
+    outputTabsBox.innerHTML = '';
+    Object.keys(exportResult.files).concat(Object.keys(exportResult.assets)).forEach(function(n){
+      var b = document.createElement('button');
+      b.className = 'tab'; b.dataset.output = n; b.textContent = fileName(n);
+      b.addEventListener('click', function(){ selectOutput(n); });
+      outputTabsBox.appendChild(b);
+    });
+    var d1 = document.createElement('button'); d1.className = 'tab'; d1.id = 'download-output'; d1.addEventListener('click', function(){ downloadFile(selectedOutput); });
+    var d2 = document.createElement('button'); d2.className = 'tab'; d2.id = 'download-all';
+    var total = Object.keys(exportResult.files).length + Object.keys(exportResult.assets).length;
+    d2.textContent = 'Download all ' + total + ' files';
+    d2.addEventListener('click', function(){ Object.keys(exportResult.files).concat(Object.keys(exportResult.assets)).forEach(function(n, i){ setTimeout(function(){ downloadFile(n); }, i * 300); }); });
+    outputTabsBox.appendChild(d1); outputTabsBox.appendChild(d2);
+  }
+  function selectOutput(name){
+    selectedOutput = name;
+    outputTabsBox.querySelectorAll('[data-output]').forEach(function(t){ t.classList.toggle('on', t.dataset.output === name); });
+    document.getElementById('output-code').value = exportResult.assets[name] ? '[Binary file, ' + exportResult.assets[name].size + ' bytes. It is saved with Download all, next to the page.]' : exportResult.files[name];
+    document.getElementById('download-output').textContent = 'Download ' + fileName(name);
+  }
+  function downloadFile(name){
+    var url = URL.createObjectURL(exportResult.assets[name] || new Blob([exportResult.files[name]], {type: typeOf(name) + ';charset=utf-8'}));
+    var a = document.createElement('a'); a.href = url; a.download = fileName(name); document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+  }
+  function convertNow(stay){
+    exportResult = WebLang.buildExport(eds.btw.value, eds.stw.value, eds.mtwc.value, more(), files);
+    exportResult.assets = {};
+    var allText = Object.keys(exportResult.files).map(function(k){ return exportResult.files[k]; }).join('\n');
+    Object.keys(files).forEach(function(n){ if(files[n].blob && allText.indexOf(n) >= 0) exportResult.assets[n] = files[n].blob; });
+    con.innerHTML = '';
+    exportResult.warnings.forEach(function(w){ log('Warning: ' + w, 'warn'); });
+    if(!exportResult.warnings.length) log('Converted ' + (Object.keys(exportResult.files).length + Object.keys(exportResult.assets).length) + ' files with no warnings', 'ok');
+    buildOutputTabs();
+    selectOutput('index.html');
+    if(stay === true){ log('Converted. Press Convert to see and download the result.', 'ok'); return; }
+    document.querySelector('.main').hidden = true;
+    document.getElementById('exports').hidden = false;
+  }
+  document.getElementById('convert').addEventListener('click', convertNow);
+  document.getElementById('close-export').addEventListener('click', function(){
+    document.getElementById('exports').hidden = true;
+    document.querySelector('.main').hidden = false;
+  });
+
+  // Open files by hand (picker or drag and drop). Language files go to the right editor by extension,
+  // .md/.txt and assets go to the files list, then the IDE runs and creates the output files automatically.
+  function loadFiles(list){
+    var all = Array.prototype.slice.call(list || []), skipped = [], jobs = [];
+    all.forEach(function(f){
+      var ext = f.name.split('.').pop().toLowerCase();
+      if(LANG_EXT[ext] || TEXT_EXT.indexOf(ext) >= 0) jobs.push({f:f, ext:ext});
+      else if(BLOB_EXT.indexOf(ext) >= 0){
+        if(files[f.name] && files[f.name].url) URL.revokeObjectURL(files[f.name].url);
+        files[f.name] = {url:URL.createObjectURL(f), size:f.size, blob:f};
+        jobs.push({f:f, ext:ext, done:true});
+      } else skipped.push('Could not open "' + f.name + '": ' + (f.name.indexOf('.') < 0 ? 'it has no ending' : '.' + ext + ' files are not supported') + '. You can open: ' + ALLOWED + ', and images, video, audio and .glb models.');
+    });
+    function logSkipped(){ skipped.forEach(function(m){ log(m, 'warn'); }); }
+    if(!jobs.length){ logSkipped(); return; }
+    var pending = jobs.filter(function(j){ return !j.done; }).length, loaded = [];
+    function finish(){
+      renderFiles(); run();
+      log('Opened ' + jobs.map(function(j){ return j.f.name; }).join(', '), 'ok');
+      if(con.querySelector('.warn')) log('The files opened fine. The ⚠ lines above are hints about code inside them, they do not block anything.', 'log');
+      if(document.getElementById('auto-convert').checked) convertNow(true);
+      logSkipped();
+    }
+    if(!pending){ finish(); return; }
+    jobs.forEach(function(j){
+      if(j.done) return;
+      var r = new FileReader();
+      r.onload = function(){
+        var text = String(r.result);
+        if(LANG_EXT[j.ext]){
+          addDoc(j.f.name, LANG_EXT[j.ext], text);
+        } else {
+          files[j.f.name] = {text:text, size:text.length};
+        }
+        if(--pending === 0) finish();
+      };
+      r.onerror = function(){ log('Could not read "' + j.f.name + '": the browser could not load it. Try opening it again.', 'err'); if(--pending === 0) finish(); };
+      r.readAsText(j.f);
+    });
+  }
+  var fileInput = document.getElementById('file-input');
+  openBtn.addEventListener('click', function(){ fileInput.click(); });
+  fileInput.addEventListener('change', function(){ loadFiles(fileInput.files); fileInput.value = ''; });
+  ['dragover', 'drop'].forEach(function(ev){ document.addEventListener(ev, function(e){
+    if(!e.dataTransfer || Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') < 0) return;
+    e.preventDefault();
+    if(ev === 'drop') loadFiles(e.dataTransfer.files);
+  }); });
+  document.getElementById('run').addEventListener('click', run);
+  window.addEventListener('message', function(e){
+    if(e.data && e.data.wl === 'log') log('» ' + e.data.msg, 'log');
+  });
+  window.__wlIDE = {docs:docs, newFile:newFile, openFile:openFile, run:run, convertNow:convertNow, loadFiles:loadFiles, eds:eds, files:files};
+  run();
+})();
+}
+</script>
+</body>
+</html>

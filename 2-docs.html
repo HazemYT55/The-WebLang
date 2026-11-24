@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebLang Docs · BTW · STW · MTWC</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#121829; --panel2:#0e1424; --line:rgba(255,255,255,.08);
+    --txt:#e8ecf5; --muted:#9aa4c0; --acc1:#7c5cff; --acc2:#00d4ff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--txt); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; line-height:1.6}
+  a{color:inherit; text-decoration:none}
+  nav{position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:8px;
+      padding:14px 24px; background:rgba(11,15,26,.85); backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+  .logo{font-weight:800; font-size:20px; margin-right:auto}
+  .logo span{background:linear-gradient(90deg,var(--acc1),var(--acc2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  nav a.nl{padding:7px 14px; border-radius:9px; color:var(--muted); font-size:14px; font-weight:600}
+  nav a.nl:hover{color:var(--txt); background:var(--panel)}
+  nav a.nl.on{color:var(--txt); background:var(--panel); box-shadow:inset 0 0 0 1px var(--line)}
+  @media (max-width:640px){nav{flex-wrap:wrap; padding:10px 14px} .logo{width:100%} nav a.nl{padding:6px 10px; font-size:13px}}
+  .layout{max-width:1100px; margin:0 auto; padding:32px 24px; display:grid; grid-template-columns:200px 1fr; gap:36px}
+  .side{position:sticky; top:76px; align-self:start; display:flex; flex-direction:column; gap:4px}
+  .side a{color:var(--muted); font-size:14px; font-weight:600; padding:6px 12px; border-radius:8px}
+  .side a:hover{color:var(--txt); background:var(--panel)}
+  h1{font-size:34px; margin-bottom:6px}
+  .lead{color:var(--muted); margin-bottom:32px}
+  h2{font-size:24px; margin:44px 0 6px; padding-top:16px; border-top:1px solid var(--line)}
+  h2:first-of-type{border-top:none}
+  h3{font-size:17px; margin:26px 0 10px; color:var(--acc2)}
+  p.ds{color:var(--muted); margin-bottom:14px; font-size:15px}
+  table{width:100%; border-collapse:collapse; margin:12px 0 22px; font-size:13.5px}
+  th,td{text-align:left; padding:8px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{color:var(--acc2); font-size:12.5px; text-transform:uppercase; letter-spacing:.4px}
+  td code, p code{background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:1px 7px;
+     font-family:ui-monospace,Consolas,monospace; font-size:12.5px; color:#ffd479; white-space:nowrap}
+  pre{background:var(--panel2); border:1px solid var(--line); border-radius:14px; padding:18px 20px;
+      overflow-x:auto; font-family:ui-monospace,Consolas,monospace; font-size:13px; line-height:1.65; color:#d6def0; margin:12px 0 22px}
+  .note{background:rgba(124,92,255,.1); border:1px solid rgba(124,92,255,.35); border-radius:12px;
+        padding:14px 18px; font-size:14px; color:var(--muted); margin:14px 0 22px}
+  .note b{color:var(--txt)}
+  .layout > div{min-width:0}
+  @media (max-width:800px){.layout{grid-template-columns:1fr; padding:20px 14px}.side{position:static; flex-direction:row; flex-wrap:wrap}
+    table{display:block; overflow-x:auto} pre{font-size:12px} h1{font-size:26px}}
+  footer{border-top:1px solid var(--line); margin-top:60px; padding:28px 24px; text-align:center; color:var(--muted); font-size:14px}
+  footer a{color:var(--acc2); font-weight:600}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Web<span>Lang</span></div>
+  <a class="nl" href="index.html">Home</a>
+  <a class="nl on" href="docs.html">Docs</a>
+  <a class="nl" href="IDE.html">IDE</a>
+  <a class="nl" href="Creator.html">Creator</a>
+</nav>
+
+<div class="layout">
+  <div class="side">
+    <a href="#start">Quick Start</a>
+    <a href="#btw">BTW</a>
+    <a href="#stw">STW</a>
+    <a href="#mtwc">MTWC</a>
+    <a href="#v11">New in v1.1</a>
+    <a href="#ten">All 10 languages</a>
+    <a href="#together">How they connect</a>
+    <a href="#examples">Examples</a>
+    <a href="#cheat">Cheat Sheet</a>
+    <a href="#mistakes">Common Mistakes</a>
+  </div>
+
+  <div>
+    <h1>WebLang Documentation</h1>
+    <p class="lead">v1.1 · A simple, readable web language that replaces HTML, CSS and JavaScript with 3 clean file types.</p>
+
+    <h2 id="start">🚀 Quick Start</h2>
+    <p class="ds">A full interactive page in 3 tiny files:</p>
+    <pre># page.btw
+link web.stw
+link web.mtwc
+
+title : My App
+t.1 "Welcome" [id:1]
+btn "Dark Mode" [id:2]
+img: photo.jpg</pre>
+    <pre># web.stw
+body([t.a:center],[f.f:Times],[c:white],[bg:black])</pre>
+    <pre># web.mtwc
+btn.id = 2 , connect to 'page.btw':
+
+action(Dark)
+  inclick btn:
+    if (Dark) == true:
+      (Dark) == false
+      theme light
+    else
+      (Dark) == true
+      theme dark</pre>
+
+    <h2 id="btw">📄 BTW · Base Text Web</h2>
+    <p class="ds"><b>Extension:</b> <code>.btw</code> · <b>Replaces:</b> HTML · <b>Purpose:</b> structure and content of a web page.</p>
+
+    <h3>Page Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>title</code></td><td>Page title (tab name)</td><td><code>title : My Page</code></td></tr>
+      <tr><td><code>link</code></td><td>Connect STW / MTWC files</td><td><code>link web.stw</code></td></tr>
+      <tr><td><code>meta</code></td><td>Page info</td><td><code>meta author : Ali</code></td></tr>
+      <tr><td><code>icon</code></td><td>Browser tab icon</td><td><code>icon: logo.png</code></td></tr>
+    </table>
+
+    <h3>Text Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>t.1</code>–<code>t.6</code></td><td>Headings (big → small)</td><td><code>t.1 "Welcome"</code></td></tr>
+      <tr><td><code>p</code></td><td>Paragraph</td><td><code>p "Some words"</code></td></tr>
+      <tr><td><code>b</code></td><td>Bold</td><td><code>b "important"</code></td></tr>
+      <tr><td><code>i</code></td><td>Italic</td><td><code>i "note"</code></td></tr>
+      <tr><td><code>u</code></td><td>Underline</td><td><code>u "text"</code></td></tr>
+      <tr><td><code>s</code></td><td>Strikethrough</td><td><code>s "old"</code></td></tr>
+      <tr><td><code>code</code></td><td>Code snippet</td><td><code>code "print('hi')"</code></td></tr>
+      <tr><td><code>quote</code></td><td>Blockquote</td><td><code>quote "words"</code></td></tr>
+      <tr><td><code>mark</code></td><td>Highlight</td><td><code>mark "highlight"</code></td></tr>
+      <tr><td><code>small</code></td><td>Small text</td><td><code>small "fine print"</code></td></tr>
+    </table>
+
+    <h3>Link Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>a</code></td><td>Hyperlink</td><td><code>a "Google" -&gt; https://google.com</code></td></tr>
+      <tr><td><code>anchor</code></td><td>Jump to section</td><td><code>anchor #top</code></td></tr>
+      <tr><td><code>email</code></td><td>Email link</td><td><code>email "mail@site.com"</code></td></tr>
+      <tr><td><code>phone</code></td><td>Phone link</td><td><code>phone "123456"</code></td></tr>
+    </table>
+
+    <h3>Media Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>img</code></td><td>Image</td><td><code>img: photo.jpg</code></td></tr>
+      <tr><td><code>vid</code></td><td>Video</td><td><code>vid: 1.mp4</code></td></tr>
+      <tr><td><code>mus</code></td><td>Music</td><td><code>mus: music.mp3</code></td></tr>
+      <tr><td><code>gif</code></td><td>GIF</td><td><code>gif: fun.gif</code></td></tr>
+      <tr><td><code>svg</code></td><td>SVG icon</td><td><code>svg: icon.svg</code></td></tr>
+      <tr><td><code>iframe</code></td><td>Embed page</td><td><code>iframe: https://site.com</code></td></tr>
+    </table>
+
+    <h3>Button Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>btn</code></td><td>Button</td><td><code>btn "Click me"</code></td></tr>
+      <tr><td><code>btn.icon</code></td><td>Button with icon</td><td><code>btn.icon "★ Save"</code></td></tr>
+      <tr><td><code>btn.link</code></td><td>Link button</td><td><code>btn.link "Go" -&gt; /page</code></td></tr>
+      <tr><td><code>btn.disabled</code></td><td>Disabled button</td><td><code>btn.disabled "Can't click"</code></td></tr>
+    </table>
+
+    <h3>Form Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>form</code></td><td>Input wrapper</td><td><code>form { ... }</code></td></tr>
+      <tr><td><code>input</code></td><td>Text field</td><td><code>input email</code></td></tr>
+      <tr><td><code>pass</code></td><td>Password</td><td><code>pass password</code></td></tr>
+      <tr><td><code>num</code></td><td>Number</td><td><code>num age</code></td></tr>
+      <tr><td><code>date</code></td><td>Date picker</td><td><code>date birthday</code></td></tr>
+      <tr><td><code>textarea</code></td><td>Multi-line text</td><td><code>textarea message</code></td></tr>
+      <tr><td><code>check</code></td><td>Checkbox</td><td><code>check "I agree"</code></td></tr>
+      <tr><td><code>radio</code></td><td>Radio button</td><td><code>radio "Yes"</code></td></tr>
+      <tr><td><code>select</code></td><td>Dropdown</td><td><code>select { opt "A" }</code></td></tr>
+      <tr><td><code>opt</code></td><td>Dropdown option</td><td><code>opt "A"</code></td></tr>
+      <tr><td><code>label</code></td><td>Input label</td><td><code>label "Name"</code></td></tr>
+      <tr><td><code>submit</code></td><td>Submit button</td><td><code>submit "Send"</code></td></tr>
+      <tr><td><code>range</code></td><td>Slider</td><td><code>range 0-100</code></td></tr>
+      <tr><td><code>file</code></td><td>File upload</td><td><code>file resume.pdf</code></td></tr>
+      <tr><td><code>color</code></td><td>Color picker</td><td><code>color theme</code></td></tr>
+    </table>
+
+    <h3>Layout Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>box</code></td><td>Container</td><td><code>box { ... }</code></td></tr>
+      <tr><td><code>row</code></td><td>Horizontal layout</td><td><code>row { ... }</code></td></tr>
+      <tr><td><code>col</code></td><td>Vertical layout</td><td><code>col { ... }</code></td></tr>
+      <tr><td><code>grid</code></td><td>Grid layout</td><td><code>grid { ... }</code></td></tr>
+      <tr><td><code>card</code></td><td>Card</td><td><code>card { ... }</code></td></tr>
+      <tr><td><code>header</code></td><td>Top of page</td><td><code>header { ... }</code></td></tr>
+      <tr><td><code>footer</code></td><td>Bottom of page</td><td><code>footer { ... }</code></td></tr>
+      <tr><td><code>nav</code></td><td>Navigation</td><td><code>nav { ... }</code></td></tr>
+      <tr><td><code>section</code></td><td>Section</td><td><code>section { ... }</code></td></tr>
+      <tr><td><code>aside</code></td><td>Side content</td><td><code>aside { ... }</code></td></tr>
+      <tr><td><code>center</code></td><td>Center content</td><td><code>center { ... }</code></td></tr>
+      <tr><td><code>space</code></td><td>Spacer</td><td><code>space 20px</code></td></tr>
+      <tr><td><code>line</code></td><td>Divider</td><td><code>line</code></td></tr>
+    </table>
+
+    <h3>List Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>ul</code></td><td>Bullet list</td><td><code>ul { li "A" }</code></td></tr>
+      <tr><td><code>ol</code></td><td>Numbered list</td><td><code>ol { li "1" }</code></td></tr>
+      <tr><td><code>li</code></td><td>List item</td><td><code>li "Apple"</code></td></tr>
+      <tr><td><code>dl</code></td><td>Definition list</td><td><code>dl { dt "Word" dd "Meaning" }</code></td></tr>
+      <tr><td><code>dt</code></td><td>Term</td><td><code>dt "Word"</code></td></tr>
+      <tr><td><code>dd</code></td><td>Definition</td><td><code>dd "Meaning"</code></td></tr>
+    </table>
+
+    <h3>Table Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>table</code></td><td>Table</td><td><code>table { ... }</code></td></tr>
+      <tr><td><code>tr</code></td><td>Row</td><td><code>tr { ... }</code></td></tr>
+      <tr><td><code>td</code></td><td>Cell</td><td><code>td "Data"</code></td></tr>
+      <tr><td><code>th</code></td><td>Header cell</td><td><code>th "Name"</code></td></tr>
+      <tr><td><code>thead</code></td><td>Header section</td><td><code>thead { ... }</code></td></tr>
+      <tr><td><code>tbody</code></td><td>Body section</td><td><code>tbody { ... }</code></td></tr>
+      <tr><td><code>caption</code></td><td>Table title</td><td><code>caption "Scores"</code></td></tr>
+    </table>
+
+    <h3>Extra Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>progress</code></td><td>Progress bar</td><td><code>progress 70%</code></td></tr>
+      <tr><td><code>loading</code></td><td>Spinner</td><td><code>loading</code></td></tr>
+      <tr><td><code>tooltip</code></td><td>Hover hint</td><td><code>tooltip "Info"</code></td></tr>
+      <tr><td><code>badge</code></td><td>Small label</td><td><code>badge "New"</code></td></tr>
+      <tr><td><code>avatar</code></td><td>Profile picture</td><td><code>avatar: user.jpg</code></td></tr>
+      <tr><td><code>clock</code></td><td>Live clock</td><td><code>clock</code></td></tr>
+      <tr><td><code>count</code></td><td>Counter</td><td><code>count: 0</code></td></tr>
+      <tr><td><code>theme</code></td><td>Dark / light</td><td><code>theme dark</code></td></tr>
+      <tr><td><code>lang</code></td><td>Page language</td><td><code>lang ar</code></td></tr>
+      <tr><td><code>comment</code></td><td>Hidden note</td><td><code>comment "todo"</code></td></tr>
+      <tr><td><code>id</code></td><td>Element id</td><td><code>btn "Hi" [id:1]</code></td></tr>
+      <tr><td><code>class</code></td><td>Group elements</td><td><code>btn "Hi" [class:main]</code></td></tr>
+    </table>
+
+    <h3>BTW Example</h3>
+    <pre>title : My Page
+
+header {
+  nav {
+    a "Home" -&gt; /
+    a "About" -&gt; /about
+  }
+}
+
+section {
+  t.1 "About Us"
+  p "We build things."
+  row {
+    card { t.2 "Fast"  p "Very fast." }
+    card { t.2 "Simple" p "Very simple." }
+  }
+}
+
+footer {
+  p "© 2026 My Site"
+}</pre>
+
+    <h2 id="stw">🎨 STW · Style The Web</h2>
+    <p class="ds"><b>Extension:</b> <code>.stw</code> · <b>Replaces:</b> CSS · <b>Purpose:</b> styles BTW elements using short property tags. Connect it with <code>link web.stw</code> in your <code>.btw</code> file.</p>
+
+    <h3>The Rule · One Shortcode Per Property (v1.1)</h3>
+    <p class="ds">Every CSS property has exactly one official STW shortcode. No levels, no clashes. Older shortcodes such as <code>f.s</code>, <code>b.col</code> or <code>b.ra</code> still work in the IDE, but it warns you and shows the official one to use.</p>
+    <h3>CSS → STW Translation Table</h3>
+    <table>
+      <tr><th>CSS Property</th><th>STW</th></tr>
+      <tr><td>color</td><td><code>c</code></td></tr>
+      <tr><td>background-color</td><td><code>bg</code></td></tr>
+      <tr><td>background-image</td><td><code>bg.i</code></td></tr>
+      <tr><td>border-color</td><td><code>bd</code></td></tr>
+      <tr><td>opacity</td><td><code>o</code></td></tr>
+      <tr><td>font-family</td><td><code>f.f</code></td></tr>
+      <tr><td>font-size</td><td><code>f.si</code></td></tr>
+      <tr><td>font-style</td><td><code>f.st</code></td></tr>
+      <tr><td>font-weight</td><td><code>f.w</code></td></tr>
+      <tr><td>text-align</td><td><code>t.a</code></td></tr>
+      <tr><td>text-decoration</td><td><code>t.d</code></td></tr>
+      <tr><td>text-transform</td><td><code>t.t</code></td></tr>
+      <tr><td>line-height</td><td><code>l.h</code></td></tr>
+      <tr><td>letter-spacing</td><td><code>l.s</code></td></tr>
+      <tr><td>margin</td><td><code>m</code></td></tr>
+      <tr><td>margin-top</td><td><code>m.t</code></td></tr>
+      <tr><td>margin-bottom</td><td><code>m.b</code></td></tr>
+      <tr><td>margin-left</td><td><code>m.l</code></td></tr>
+      <tr><td>margin-right</td><td><code>m.r</code></td></tr>
+      <tr><td>padding</td><td><code>p</code></td></tr>
+      <tr><td>padding-top</td><td><code>p.t</code></td></tr>
+      <tr><td>padding-bottom</td><td><code>p.b</code></td></tr>
+      <tr><td>padding-left</td><td><code>p.l</code></td></tr>
+      <tr><td>padding-right</td><td><code>p.r</code></td></tr>
+      <tr><td>gap</td><td><code>g</code></td></tr>
+      <tr><td>width</td><td><code>w</code></td></tr>
+      <tr><td>height</td><td><code>h</code></td></tr>
+      <tr><td>min-width</td><td><code>mw</code></td></tr>
+      <tr><td>max-width</td><td><code>xw</code></td></tr>
+      <tr><td>min-height</td><td><code>mh</code></td></tr>
+      <tr><td>max-height</td><td><code>xh</code></td></tr>
+      <tr><td>border</td><td><code>b</code></td></tr>
+      <tr><td>border-width</td><td><code>b.w</code></td></tr>
+      <tr><td>border-style</td><td><code>b.st</code></td></tr>
+      <tr><td>border-radius</td><td><code>b.r</code></td></tr>
+      <tr><td>box-shadow</td><td><code>sh</code></td></tr>
+      <tr><td>display</td><td><code>d</code></td></tr>
+      <tr><td>position</td><td><code>pos</code></td></tr>
+      <tr><td>top</td><td><code>t</code></td></tr>
+      <tr><td>bottom</td><td><code>bo</code></td></tr>
+      <tr><td>left</td><td><code>le</code></td></tr>
+      <tr><td>right</td><td><code>ri</code></td></tr>
+      <tr><td>z-index</td><td><code>z</code></td></tr>
+      <tr><td>flex-direction</td><td><code>fl.d</code></td></tr>
+      <tr><td>justify-content</td><td><code>j.c</code></td></tr>
+      <tr><td>align-items</td><td><code>a.i</code></td></tr>
+      <tr><td>overflow</td><td><code>ov</code></td></tr>
+      <tr><td>transition</td><td><code>tr</code></td></tr>
+      <tr><td>transform</td><td><code>tf</code></td></tr>
+      <tr><td>cursor</td><td><code>cu</code></td></tr>
+    </table>
+
+    <h3>STW Example</h3>
+    <pre>body([t.a:center],[f.f:Times],[c:white],[bg:black])
+btn([bg:blue],[c:white],[p:10px],[b.r:5px],[cu:pointer])</pre>
+
+    <h2 id="mtwc">⚡ MTWC · Make The Web Click</h2>
+    <p class="ds"><b>Extension:</b> <code>.mtwc</code> · <b>Replaces:</b> JavaScript · <b>Purpose:</b> logic and interactivity for BTW pages.</p>
+
+    <h3>Connection</h3>
+    <table>
+      <tr><th>Keyword</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>.id = ?</code></td><td>Give an id</td><td><code>btn.id = 1</code></td></tr>
+      <tr><td><code>connect to 'file.btw':</code></td><td>Link to page</td><td><code>connect to 'web.btw':</code></td></tr>
+      <tr><td><code>link</code></td><td>Attach MTWC</td><td><code>link extra.mtwc</code></td></tr>
+    </table>
+
+    <h3>Actions</h3>
+    <table>
+      <tr><th>Keyword</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>action(Name)</code></td><td>Define action</td><td><code>action(Dark)</code></td></tr>
+      <tr><td><code>run(Name)</code></td><td>Call action</td><td><code>run(Dark)</code></td></tr>
+      <tr><td><code>stop(Name)</code></td><td>Stop action</td><td><code>stop(Dark)</code></td></tr>
+      <tr><td><code>repeat(N):</code></td><td>Repeat N times</td><td><code>repeat(3):</code></td></tr>
+      <tr><td><code>loop:</code></td><td>Loop forever</td><td><code>loop:</code></td></tr>
+      <tr><td><code>wait(N):</code></td><td>Pause N sec</td><td><code>wait(2):</code></td></tr>
+      <tr><td><code>end</code></td><td>Close block</td><td><code>end</code></td></tr>
+    </table>
+
+    <h3>Events</h3>
+    <table>
+      <tr><th>Keyword</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>inclick ?</code></td><td>On click</td><td><code>inclick btn:</code></td></tr>
+      <tr><td><code>inload ?</code></td><td>On page load</td><td><code>inload page:</code></td></tr>
+      <tr><td><code>inhover ?</code></td><td>On hover</td><td><code>inhover btn:</code></td></tr>
+      <tr><td><code>inleave ?</code></td><td>On leave</td><td><code>inleave btn:</code></td></tr>
+      <tr><td><code>intype ?</code></td><td>On typing</td><td><code>intype input:</code></td></tr>
+      <tr><td><code>insubmit ?</code></td><td>On submit</td><td><code>insubmit form:</code></td></tr>
+      <tr><td><code>inscroll ?</code></td><td>On scroll</td><td><code>inscroll page:</code></td></tr>
+      <tr><td><code>inkey ?</code></td><td>On key press</td><td><code>inkey Enter:</code></td></tr>
+    </table>
+
+    <h3>Logic</h3>
+    <table>
+      <tr><th>Keyword</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>if (?) == true:</code></td><td>If true</td><td><code>if (Dark) == true:</code></td></tr>
+      <tr><td><code>if (?) &gt; ?:</code></td><td>Greater than</td><td><code>if (count) &gt; 10:</code></td></tr>
+      <tr><td><code>if (?) &lt; ?:</code></td><td>Less than</td><td><code>if (count) &lt; 0:</code></td></tr>
+      <tr><td><code>if (?) == "?":</code></td><td>Text match</td><td><code>if (name) == "Ali":</code></td></tr>
+      <tr><td><code>else if:</code></td><td>Another check</td><td><code>else if (count) == 5:</code></td></tr>
+      <tr><td><code>else</code></td><td>Otherwise</td><td><code>else</code></td></tr>
+      <tr><td><code>and</code> / <code>or</code> / <code>not</code></td><td>Combine conditions</td><td><code>if (a) == true and (b) == true:</code></td></tr>
+    </table>
+
+    <h3>Variables</h3>
+    <table>
+      <tr><th>Keyword</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>var name = ?</code></td><td>Create variable</td><td><code>var count = 0</code></td></tr>
+      <tr><td><code>(?) == ?</code></td><td>Set value</td><td><code>(count) == 5</code></td></tr>
+      <tr><td><code>(?) == (?) + 1</code></td><td>Add</td><td><code>(count) == (count) + 1</code></td></tr>
+      <tr><td><code>(?) == (?) - 1</code></td><td>Subtract</td><td><code>(count) == (count) - 1</code></td></tr>
+      <tr><td><code>(?) == (?) * ?</code></td><td>Multiply</td><td><code>(price) == (price) * 2</code></td></tr>
+      <tr><td><code>(?) == (?) / ?</code></td><td>Divide</td><td><code>(total) == (total) / 2</code></td></tr>
+    </table>
+
+    <h3>Output</h3>
+    <table>
+      <tr><th>Keyword</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>show ?</code></td><td>Display value</td><td><code>show (count)</code></td></tr>
+      <tr><td><code>alert ?</code></td><td>Popup</td><td><code>alert "Hello!"</code></td></tr>
+      <tr><td><code>log ?</code></td><td>Console print</td><td><code>log (count)</code></td></tr>
+      <tr><td><code>set ?</code></td><td>Change text</td><td><code>set t.1 "New title"</code></td></tr>
+      <tr><td><code>hide ?</code></td><td>Hide element</td><td><code>hide box</code></td></tr>
+      <tr><td><code>reveal ?</code></td><td>Show element</td><td><code>reveal box</code></td></tr>
+      <tr><td><code>color ?</code></td><td>Change color</td><td><code>color btn "red"</code></td></tr>
+      <tr><td><code>size ?</code></td><td>Change size</td><td><code>size img "200px"</code></td></tr>
+    </table>
+
+    <h3>Style Control, Math & Time</h3>
+    <table>
+      <tr><th>Keyword</th><th>What it's for</th><th>Example</th></tr>
+      <tr><td><code>theme dark</code> / <code>theme light</code></td><td>Dark / light mode</td><td><code>theme dark</code></td></tr>
+      <tr><td><code>class add ?</code> / <code>class remove ?</code></td><td>Add / remove class</td><td><code>class add btn "active"</code></td></tr>
+      <tr><td><code>+ - * / %</code></td><td>Basic math</td><td><code>(a) + (b)</code></td></tr>
+      <tr><td><code>random(?,?)</code></td><td>Random number</td><td><code>random(1,10)</code></td></tr>
+      <tr><td><code>now</code> / <code>today</code></td><td>Current time / date</td><td><code>show now</code></td></tr>
+      <tr><td><code>timer(N)</code></td><td>Countdown</td><td><code>timer(10)</code></td></tr>
+    </table>
+
+    <h2 id="v11">🆕 New in v1.1</h2>
+    <p class="ds">These features now work in the IDE and in converted files.</p>
+
+    <h3>Read form data (MTWC)</h3>
+    <pre>form [id:1] {
+  input email [id:4]
+  btn "Login" [id:3]
+}
+t.1 "Welcome" [id:6]</pre>
+    <pre>btn.id = 3 , connect to 'page.btw':
+
+action(Login)
+  inclick btn:
+    if get input.4 == "":
+      alert "Type your email first"
+    else
+      set t.1 "Welcome, {get input.4}!"
+      clear form.1</pre>
+
+    <h3>Multi-page sites</h3>
+    <pre># page1.btw
+a "Next page" -&gt; page2.btw
+
+# web.mtwc
+action(Next)
+  inclick btn:
+    save name to 'page2'
+    go 'page2.btw'
+
+# page2's MTWC
+action(Hello)
+  inload page:
+    load name from 'page2'
+    set t.1 "Hello, (name)"</pre>
+    <p class="ds">Convert each page and save it as its own file, for example <code>page2.html</code>. Links to <code>.btw</code> pages become <code>.html</code> links.</p>
+
+    <h3>Custom components</h3>
+    <pre>define Card {
+  card {
+    img: prop image [w:200]
+    t.2 prop title
+    slot
+  }
+}
+
+use Card { prop image "a.jpg" prop title "App One" }
+use Card { prop image "b.jpg" prop title "App Two" p "Extra text goes in the slot" }</pre>
+
+    <h3>Video and music options</h3>
+    <pre>vid: intro.mp4 [autoplay] [mute] [loop] [w:400] [poster:"cover.jpg"]
+mus: song.mp3 [loop] [volume:0.5]</pre>
+
+    <h3>Open files in the IDE</h3>
+    <p class="ds">Press <b>Open files</b> or drag files for any of the 10 languages (plus .md, .txt, .glb, images and media) onto the IDE. Each file gets its own tab and the page runs. Press <b>Convert</b> to get the HTML, CSS and JS files to download. If a file cannot be opened, the message under the editor says why and lists the endings that work.</p>
+
+    <h3>Project files and new files</h3>
+    <p class="ds">Every file you have is a tab above the editor: WebLang files, .md and .txt files, and media. Click a tab to edit or preview it, click × to close it. Text files are saved in this browser. Images, videos and models must be opened again after a reload.</p>
+    <p class="ds">Press <b>+</b> next to the tabs, type a name with its ending, for example <b>page.btw</b>, and press Enter. You get a blank file. The ending decides the language: .btw .stw .mtwc .iotw .motw .ifw .smdf .stf .3ds .ssitw, or .md and .txt. A name without an ending, or with an unknown one, shows a message instead of creating the file.</p>
+    <p class="ds"><b>Preview:</b> click an image, video or audio tab to see or play it. 3D models (.glb) are drawn by a .3ds scene. Your WebLang and text files are saved in this browser, so they are still there after a reload. Images, videos and models must be opened again after a reload.</p>
+
+    <h2 id="ten">🧩 The other 7 languages in the IDE</h2>
+    <p class="ds">Each has its own tab with an example (press <b>Load example</b>). Converted sites export <code>index.html</code>, <code>style.css</code>, <code>script.js</code>, plus <code>image.svg</code> when you use IFW.</p>
+
+    <h3>IOTW · data.iotw</h3>
+    <pre>(Name : [act:S] , Age : 13)
+(profile : (Role : "Dev"))</pre>
+    <p class="ds">Builds <code>window.DATA</code>. Write <code>{Name}</code> or <code>{profile.Role}</code> in BTW text and it fills in when the page runs. <code>[act:S]</code> runs <code>action(S)</code> from MTWC and stores its <code>S.Name</code> value. An action may have no event line.</p>
+
+    <h3>MOTW · server.motw</h3>
+    <pre>make it (PHP)
+make var(1) = show_img "a.png"
+make var(2) = show_text "Welcome"</pre>
+    <p class="ds">No PHP runs in the browser. The IDE turns each <code>make var(N)</code> into BTW lines at convert time, ordered by N (a repeated N: the later one wins).</p>
+
+    <h3>IFW · image.ifw</h3>
+    <pre>circle: r=40 c=blue
+text: "W" x=35 y=50 c=white</pre>
+    <p class="ds">Draws an inline SVG and exports <code>image.svg</code>. Shapes without x and y sit left to right, bottom aligned. Use <code>img: image.ifw</code> in BTW to place it, otherwise it goes at the end of the page.</p>
+
+    <h3>SMDF · docs.smdf</h3>
+    <pre>theme dark
+show readme.md [toc] [code] [tables] [links]</pre>
+    <p class="ds">Shows a Markdown file in the page. There is no disk, so open the .md file with <b>Open files</b> (or use the sample readme.md tab). Each option turns that feature on.</p>
+
+    <h3>STF · viewer.stf</h3>
+    <pre>font mono
+size 14px
+show notes.txt [wrap] [scroll] [linenums]</pre>
+    <p class="ds">Shows a text file with font, size, color, bg, maxw, wrap, scroll and line numbers. Same file rules as SMDF.</p>
+
+    <h3>3DS · scene.3ds</h3>
+    <pre>scene {
+  plane: w=500 h=500 c=gray
+  cube: size=100 c=red [spin]
+  light: sun
+  camera: orbit
+}</pre>
+    <p class="ds">Built with three.js loaded from the internet, so it needs a connection and WebGL. Models (.glb / .gltf) come from the files list. A scene without a light or camera gives a warning.</p>
+
+    <h3>SSITW · deck.ssitw</h3>
+    <pre>slide 1 {
+  title "Welcome"
+  text "My presentation"
+}</pre>
+    <p class="ds">Makes a slide deck with Prev / Next buttons and arrow keys. Style slides in STW with <code>slide id = 1 ([bc:red])</code>.</p>
+
+    <h2 id="together">🔗 How the 3 Files Work Together</h2>
+    <p class="ds">Order matters:</p>
+    <table>
+      <tr><th>Step</th><th>What to do</th></tr>
+      <tr><td>1</td><td>Write <code>page.btw</code> (structure)</td></tr>
+      <tr><td>2</td><td>Link <code>web.stw</code> (styles)</td></tr>
+      <tr><td>3</td><td>Link <code>web.mtwc</code> (logic)</td></tr>
+      <tr><td>4</td><td>Add <code>[id:N]</code> to any element MTWC needs to control</td></tr>
+      <tr><td>5</td><td>In MTWC → <code>connect to 'page.btw':</code></td></tr>
+    </table>
+
+    <h2 id="examples">💡 MTWC Examples</h2>
+
+    <h3>Dark Mode Toggle</h3>
+    <pre># page.btw
+link web.mtwc
+
+title : My Page
+t.1 "Welcome"
+btn "Toggle Dark" [id:1]</pre>
+    <pre># web.mtwc
+btn.id = 1 , connect to 'page.btw':
+
+action(Dark)
+  inclick btn:
+    if (Dark) == true:
+      (Dark) == false
+      theme light
+    else
+      (Dark) == true
+      theme dark</pre>
+
+    <h3>Counter</h3>
+    <pre># page.btw
+link web.mtwc
+
+title : Counter
+t.1 "Count: 0" [id:5]
+btn "+" [id:1]
+btn "−" [id:2]</pre>
+    <pre># web.mtwc
+var count = 0
+connect to 'page.btw':
+
+btn.id = 1
+action(Add)
+  inclick btn:
+    (count) == (count) + 1
+    set t.1 "Count: (count)"
+
+btn.id = 2
+action(Sub)
+  inclick btn:
+    (count) == (count) - 1
+    set t.1 "Count: (count)"</pre>
+
+    <h3>Login Form</h3>
+    <pre># page.btw
+link web.mtwc
+
+title : Login
+form {
+  input email [id:1]
+  pass password [id:2]
+  btn "Login" [id:3]
+}</pre>
+    <pre># web.mtwc
+btn.id = 3 , connect to 'web.btw':
+
+action(Login)
+  inclick btn:
+    if (email) == "" or (password) == "":
+      alert "Fill all fields!"
+    else
+      alert "Welcome!"</pre>
+
+    <h2 id="cheat">📋 Full Cheat Sheet</h2>
+    <pre>### BTW
+title :      → page title
+t.1 – t.6    → headings
+p            → paragraph
+btn          → button
+img: / vid: / mus:   → media
+a "text" -&gt; url     → link
+[id:N]       → id for MTWC
+link web.stw / web.mtwc  → connect files
+
+### STW
+SYNTAX:   [prop:value]
+MULTIPLE: [a:v],[b:v]
+RULE:     one official shortcode per property (v1.1)
+KEY:      c · bg · bd · f.f · f.si · f.st · t.a · m.t · p · b.r · sh
+
+### MTWC
+CONNECT:  btn.id = 1 , connect to 'web.btw':
+ACTIONS:  action / run / stop / repeat / loop / wait
+EVENTS:   inclick / inload / inhover / intype / insubmit / inchange / inkey
+FORMS:    get input.id · get form.id · clear input.id · clear form.id
+PAGES:    go 'page2.btw' · back · reload · open 'url' · save x · load x
+LOGIC:    if / else if / else / and / or / not
+STATE:    var x = 0 · (x) == 5 · (x) == (x) + 1
+OUTPUT:   show / alert / set / hide / reveal
+STYLE:    theme dark / light · class add / remove</pre>
+
+    <h2 id="mistakes">✅ Common Mistakes</h2>
+    <table>
+      <tr><th>Mistake</th><th>Fix</th></tr>
+      <tr><td>Media without colon</td><td><code>img: photo.jpg</code> ✅</td></tr>
+      <tr><td>Text without quotes</td><td><code>btn "Click me"</code> ✅</td></tr>
+      <tr><td>Forgot <code>link web.stw</code> / <code>link web.mtwc</code></td><td>Add to <code>.btw</code> file</td></tr>
+      <tr><td>Forgot <code>[id:1]</code> in BTW</td><td>Add it to the element</td></tr>
+      <tr><td>Forgot <code>connect to 'web.btw':</code></td><td>Add at top of MTWC</td></tr>
+      <tr><td><code>if</code> without colon</td><td><code>if (x) == true:</code> ✅</td></tr>
+      <tr><td><code>=</code> instead of <code>==</code> in if</td><td><code>if (x) == true:</code> ✅</td></tr>
+      <tr><td>Old STW shortcode (<code>f.s</code>, <code>b.col</code>)</td><td>Use the official one: <code>f.si</code>, <code>bg</code></td></tr>
+      <tr><td>Linking a page as <code>.html</code> from BTW</td><td>Write <code>a "Next" -&gt; page2.btw</code>, the converter makes it <code>page2.html</code></td></tr>
+    </table>
+
+    <div class="note"><b>Note about the IDE:</b> the <a href="IDE.html" style="color:var(--acc2);font-weight:700">WebLang IDE</a> now has an editor tab for all 10 languages. It runs a working subset of each one in your browser. See <a href="#ten" style="color:var(--acc2);font-weight:700">the 10 languages in the IDE</a> for what works and the limits (no real PHP, 3D needs internet, one page at a time, no autocomplete).</div>
+  </div>
+</div>
+
+<footer>
+  WebLang v1.1 · Experimental prototype · Made by <a href="Creator.html">Hazem</a> ·
+  <a href="https://github.com/HazemYT55/The-WebLang">GitHub</a>
+</footer>
+</body>
+</html>
+
