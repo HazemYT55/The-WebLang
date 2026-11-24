@@ -1236,6 +1236,162 @@ if(typeof document !== 'undefined' && document.getElementById){
     'notes.txt': {text:'Plain text shown by STF.\nLine two is here.\nLine three is a much longer line so you can see how wrapping and scrolling work when it does not fit.\n', size:0}
   };
   Object.keys(files).forEach(function(k){ files[k].size = files[k].text.length; });
+  // === PROJECT FILES (sidebar, new file, viewer, saved in this browser) ===
+  var LANG_LABEL = {btw:'BTW', stw:'STW', mtwc:'MTWC', iotw:'IOTW', motw:'MOTW', ifw:'IFW', smdf:'SMDF', stf:'STF', d3:'3DS', ssitw:'SSITW'};
+  var EXT_OF = {}; Object.keys(LANG_EXT).forEach(function(k){ EXT_OF[LANG_EXT[k]] = k; });
+  var docs = {}, activeDoc = {btw:'page.btw', stw:'web.stw', mtwc:'web.mtwc'}, openName = 'page.btw';
+  EXTRA.forEach(function(e){ activeDoc[e[0]] = e[1]; });
+  Object.keys(activeDoc).forEach(function(k){ docs[activeDoc[k]] = {lang:k, text:null}; });
+  var projStyle = document.createElement('style');
+  projStyle.textContent = '.main{grid-template-columns:210px 1fr 1fr}#proj{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0;overflow:auto;font-size:13px}' +
+    '#proj .ph{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.6px}#proj .ph span{flex:1}' +
+    '#proj .pb{padding:4px 9px;font-size:12px}#proj .pf{padding:8px 10px;border-bottom:1px solid var(--line);display:none;gap:6px;flex-direction:column}#proj .pf input,#proj .pf select{width:100%;padding:6px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:13px}' +
+    '#proj .row{display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);color:#d6def0}#proj .row:hover{background:rgba(124,92,255,.08)}#proj .row.on{background:rgba(124,92,255,.18)}' +
+    '#proj .row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#proj .row .tg{font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 4px}#proj .row .x{color:#f7768e;border:none;background:none;cursor:pointer;font-size:14px}' +
+    '#proj .sec{padding:8px 10px 3px;font-size:11px;color:var(--muted);font-weight:700}#proj .hint{padding:8px 10px;color:var(--muted);font-size:12px;line-height:1.5}' +
+    '#ed-view{display:none;flex:1;overflow:auto;padding:16px;background:var(--panel2);color:#d6def0;text-align:center}#ed-view img,#ed-view video{max-width:100%;max-height:70vh;background:repeating-conic-gradient(#222 0 25%,#2a2a2a 0 50%) 50%/16px 16px;border-radius:8px}#ed-view .vn{margin-top:10px;color:var(--muted);font-size:12px;word-break:break-all}' +
+    '@media(max-width:800px){.main{grid-template-columns:1fr}#proj{max-height:190px;border-right:none;border-bottom:1px solid var(--line)}}';
+  document.head.appendChild(projStyle);
+  var side = document.createElement('div'); side.id = 'proj';
+  var FMT = [['btw','page.btw','BTW page'],['stw','web.stw','STW style'],['mtwc','web.mtwc','MTWC logic'],['iotw','data.iotw','IOTW data'],['motw','server.motw','MOTW server'],['ifw','image.ifw','IFW image'],['smdf','docs.smdf','SMDF markdown view'],['stf','viewer.stf','STF text view'],['d3','scene.3ds','3DS 3D scene'],['ssitw','deck.ssitw','SSITW slides']];
+  side.innerHTML = '<div class="ph"><span>PROJECT FILES</span><button class="tab pb" id="pf-new">+ New file</button></div>' +
+    '<div class="pf" id="pf-form"><input id="pf-name" placeholder="File name, e.g. home" autocomplete="off"><select id="pf-fmt">' +
+    '<optgroup label="The 10 WebLang formats">' + FMT.map(function(f){ return '<option value="' + f[0] + '">.' + EXT_OF[f[0]] + ' - ' + f[2] + '</option>'; }).join('') + '</optgroup>' +
+    '<optgroup label="Content files"><option value="md">.md - Markdown text</option><option value="txt">.txt - Plain text</option></optgroup></select>' +
+    '<div style="display:flex;gap:6px"><button class="tab pb" id="pf-create">Create</button><button class="tab pb" id="pf-cancel">Cancel</button></div></div>' +
+    '<div id="pf-list"></div>';
+  document.querySelector('.main').insertBefore(side, document.querySelector('.main').firstChild);
+  var viewPane = document.createElement('div'); viewPane.id = 'ed-view'; edHost.appendChild(viewPane); eds.view = viewPane;
+  var fileTA = document.createElement('textarea'); fileTA.id = 'ed-filetext'; fileTA.style.display = 'none'; fileTA.spellcheck = false;
+  edHost.appendChild(fileTA); eds.filetext = fileTA;
+  var projReady = false;
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function isActive(n){ return docs[n] && activeDoc[docs[n].lang] === n; }
+  function getText(n){ var d = docs[n]; return isActive(n) ? eds[d.lang].value : (d.text || ''); }
+  function persist(){
+    if(!projReady) return;
+    try {
+      var d = {}, t = {};
+      Object.keys(docs).forEach(function(n){ d[n] = {lang:docs[n].lang, text:getText(n)}; });
+      Object.keys(files).forEach(function(n){ if(typeof files[n].text === 'string' && !files[n].blob) t[n] = files[n].text; });
+      localStorage.setItem('wl-project', JSON.stringify({docs:d, active:activeDoc, texts:t}));
+    } catch(e) {}
+  }
+  function fileIcon(n){ var x = n.split('.').pop().toLowerCase(); return /^(png|jpe?g|gif|webp|svg)$/.test(x) ? '🖼' : /^(mp4|webm)$/.test(x) ? '🎬' : /^(mp3|wav|ogg)$/.test(x) ? '🎵' : /^(glb|gltf)$/.test(x) ? '🧊' : '📄'; }
+  function renderProject(){
+    var box = document.getElementById('pf-list'); if(!box) return;
+    box.innerHTML = '';
+    function sec(t){ var s = document.createElement('div'); s.className = 'sec'; s.textContent = t; box.appendChild(s); }
+    function row(n, tag, active, rm){
+      var r = document.createElement('div'); r.className = 'row' + (openName === n ? ' on' : ''); r.title = n;
+      var ic = document.createElement('span'); ic.textContent = fileIcon(n);
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = n;
+      r.appendChild(ic); r.appendChild(nm);
+      if(tag){ var tg = document.createElement('span'); tg.className = 'tg'; tg.textContent = tag + (active ? ' ▶' : ''); tg.title = active ? 'This file is used by Run and Convert' : 'Click to switch to this file'; r.appendChild(tg); }
+      var x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.title = 'Remove ' + n;
+      x.addEventListener('click', function(e){ e.stopPropagation(); rm(n); });
+      r.appendChild(x);
+      r.addEventListener('click', function(){ openFile(n); });
+      box.appendChild(r);
+    }
+    sec('WEBLANG FILES (' + Object.keys(docs).length + ')');
+    Object.keys(docs).forEach(function(n){ row(n, LANG_LABEL[docs[n].lang], isActive(n), removeDoc); });
+    var fn = Object.keys(files);
+    sec('CONTENT AND MEDIA (' + fn.length + ')');
+    if(!fn.length){ var h = document.createElement('div'); h.className = 'hint'; h.textContent = 'No files yet. Use Open files or drag files here.'; box.appendChild(h); }
+    fn.forEach(function(n){ row(n, '', false, removeAsset); });
+    var hint = document.createElement('div'); hint.className = 'hint';
+    hint.textContent = 'Files marked ▶ are used by Run and Convert. Your text files are saved in this browser. Images, videos and models must be opened again after a reload.';
+    box.appendChild(hint);
+    persist();
+  }
+  function openFile(n){
+    openName = n;
+    if(docs[n]){ switchDoc(n); return; }
+    var f = files[n]; if(!f) return;
+    var ext = n.split('.').pop().toLowerCase();
+    if(typeof f.text === 'string'){
+      fileTA.value = f.text; fileTA.dataset.name = n;
+      selectTab('filetext');
+    } else {
+      var h = '';
+      if(/^(png|jpe?g|gif|webp|svg)$/.test(ext)) h = '<img src="' + f.url + '" alt="' + esc(n) + '">';
+      else if(/^(mp4|webm)$/.test(ext)) h = '<video src="' + f.url + '" controls></video>';
+      else if(/^(mp3|wav|ogg)$/.test(ext)) h = '<audio src="' + f.url + '" controls></audio>';
+      else h = '<p>3D model files are drawn by a .3ds scene. Add a line like <code>model: file=' + esc(n) + '</code> to use it.</p>';
+      viewPane.innerHTML = h + '<div class="vn">' + esc(n) + ' (' + (f.size || 0) + ' bytes)</div>';
+      selectTab('view');
+    }
+    renderProject();
+  }
+  function switchDoc(n, noRun){
+    var d = docs[n], k = d.lang, cur = activeDoc[k];
+    if(cur !== n){
+      docs[cur].text = eds[k].value;
+      eds[k].value = d.text || ''; d.text = null; activeDoc[k] = n;
+      var tab = document.querySelector('.tab[data-f="' + k + '"]'); if(tab) tab.textContent = n;
+      if(k === 'btw') pageName = n === 'page.btw' ? 'index' : (n.replace(/\.btw$/i, '').replace(/[^\w.\-]/g, '_') || 'index');
+    }
+    openName = n; selectTab(k); renderProject();
+    if(!noRun) run();
+  }
+  function addDoc(n, k, text){
+    if(docs[n]){ if(isActive(n)) eds[k].value = text; else docs[n].text = text; }
+    else docs[n] = {lang:k, text:text};
+    switchDoc(n, true);
+  }
+  function removeDoc(n){
+    var k = docs[n].lang, others = Object.keys(docs).filter(function(m){ return m !== n && docs[m].lang === k; });
+    if(!others.length){ log('Cannot remove ' + n + ': keep at least one ' + LANG_LABEL[k] + ' file. Clear its text instead.', 'warn'); return; }
+    if(isActive(n)) switchDoc(others[0], true);
+    delete docs[n]; if(openName === n) openName = activeDoc[k];
+    renderProject(); run();
+  }
+  function removeAsset(n){
+    if(files[n] && files[n].url) URL.revokeObjectURL(files[n].url);
+    delete files[n]; if(openName === n){ openName = activeDoc[activeTab] || 'page.btw'; selectTab(docs[openName] ? docs[openName].lang : 'btw'); }
+    renderFiles(); run();
+  }
+  function newFile(rawName, fmt){
+    var ext = EXT_OF[fmt] || fmt;
+    var name = String(rawName || '').trim().replace(/[^\w.\-]/g, '_');
+    if(!name){ log('Type a file name first', 'warn'); return false; }
+    if(name.toLowerCase().slice(-(ext.length + 1)) !== '.' + ext) name = name.replace(/\.[A-Za-z0-9]+$/, '') + '.' + ext;
+    if(docs[name] || files[name]){ log('A file named ' + name + ' already exists', 'warn'); return false; }
+    if(LANG_EXT[ext]){ docs[name] = {lang:fmt, text:''}; switchDoc(name); }
+    else { files[name] = {text:'', size:0}; renderFiles(); openFile(name); }
+    log('Created ' + name + '. Type your code in the editor.', 'ok');
+    return true;
+  }
+  document.getElementById('pf-new').addEventListener('click', function(){
+    var f = document.getElementById('pf-form'); f.style.display = f.style.display === 'flex' ? 'none' : 'flex';
+    if(f.style.display === 'flex') document.getElementById('pf-name').focus();
+  });
+  document.getElementById('pf-cancel').addEventListener('click', function(){ document.getElementById('pf-form').style.display = 'none'; });
+  document.getElementById('pf-create').addEventListener('click', function(){
+    var nm = document.getElementById('pf-name');
+    if(newFile(nm.value, document.getElementById('pf-fmt').value)){ nm.value = ''; document.getElementById('pf-form').style.display = 'none'; }
+  });
+  document.getElementById('pf-name').addEventListener('keydown', function(e){ if(e.key === 'Enter') document.getElementById('pf-create').click(); });
+  fileTA.addEventListener('input', function(){ var n = fileTA.dataset.name; if(files[n]){ files[n].text = fileTA.value; files[n].size = fileTA.value.length; persist(); } });
+  Object.keys(eds).forEach(function(k){ if(eds[k].tagName === 'TEXTAREA') eds[k].addEventListener('input', persist); });
+  (function restore(){
+    var s; try { s = JSON.parse(localStorage.getItem('wl-project') || 'null'); } catch(e) {}
+    if(!s || !s.docs) return;
+    var saved = s.docs, act = s.active || {};
+    Object.keys(docs).forEach(function(n){ delete docs[n]; });
+    Object.keys(saved).forEach(function(n){ if(LANG_LABEL[saved[n].lang]) docs[n] = {lang:saved[n].lang, text:saved[n].text || ''}; });
+    Object.keys(activeDoc).forEach(function(k){
+      var n = act[k];
+      if(!n || !docs[n] || docs[n].lang !== k){ n = Object.keys(docs).filter(function(m){ return docs[m].lang === k; })[0]; }
+      if(!n){ n = activeDoc[k]; docs[n] = {lang:k, text:eds[k].value}; }
+      activeDoc[k] = n; eds[k].value = docs[n].text; docs[n].text = null;
+      var tab = document.querySelector('.tab[data-f="' + k + '"]'); if(tab) tab.textContent = n;
+    });
+    if(act.btw) pageName = activeDoc.btw === 'page.btw' ? 'index' : activeDoc.btw.replace(/\.btw$/i, '').replace(/[^\w.\-]/g, '_');
+    if(s.texts){ Object.keys(files).forEach(function(n){ delete files[n]; }); Object.keys(s.texts).forEach(function(n){ files[n] = {text:s.texts[n], size:s.texts[n].length}; }); }
+    openName = activeDoc.btw;
+  })();
   function renderFiles(){
     var names = Object.keys(files);
     filesPane.innerHTML = '<div style="color:var(--muted);margin-bottom:10px">Files the languages can use. SMDF reads .md, STF reads .txt, 3DS shows .glb models and images or videos show in the preview. Add more with Open files.</div>';
@@ -1247,14 +1403,16 @@ if(typeof document !== 'undefined' && document.getElementById){
       rm.addEventListener('click', function(){ if(files[n].url) URL.revokeObjectURL(files[n].url); delete files[n]; renderFiles(); });
       row.appendChild(rm); filesPane.appendChild(row);
     });
+    renderProject();
   }
+  projReady = true;
   renderFiles();
 
   tabs.forEach(function(t){ t.addEventListener('click', function(){ selectTab(t.dataset.f); }); });
   function selectTab(k){
     activeTab = k;
     document.querySelectorAll('.tab[data-f]').forEach(function(x){ x.classList.toggle('on', x.dataset.f === k); });
-    Object.keys(eds).forEach(function(key){ eds[key].style.display = (key === k) ? (key === 'files' ? 'block' : 'block') : 'none'; });
+    Object.keys(eds).forEach(function(key){ eds[key].style.display = (key === k) ? 'block' : 'none'; });
   }
   tabs = document.querySelectorAll('.tab[data-f]');
   selectTab('btw');
@@ -1370,11 +1528,7 @@ if(typeof document !== 'undefined' && document.getElementById){
       r.onload = function(){
         var text = String(r.result);
         if(LANG_EXT[j.ext]){
-          var key = LANG_EXT[j.ext];
-          eds[key].value = text;
-          var tab = document.querySelector('.tab[data-f="' + key + '"]');
-          if(tab) tab.textContent = j.f.name;
-          if(key === 'btw') pageName = j.f.name.replace(/\.btw$/i, '').replace(/[^\w.\-]/g, '_') || 'index';
+          addDoc(j.f.name, LANG_EXT[j.ext], text);
         } else {
           files[j.f.name] = {text:text, size:text.length};
         }
@@ -1395,7 +1549,7 @@ if(typeof document !== 'undefined' && document.getElementById){
   window.addEventListener('message', function(e){
     if(e.data && e.data.wl === 'log') log('» ' + e.data.msg, 'log');
   });
-  window.__wlIDE = {run:run, convertNow:convertNow, loadFiles:loadFiles, eds:eds, files:files};
+  window.__wlIDE = {docs:docs, newFile:newFile, openFile:openFile, run:run, convertNow:convertNow, loadFiles:loadFiles, eds:eds, files:files};
   run();
 })();
 }
