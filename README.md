@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="1-weblang-logo.png" alt="WebLang logo" width="220">
+</p>
+
 # 🌐 WebLang — BTW · STW · MTWC
 
 A simple, readable web language that replaces **HTML**, **CSS**, and **JavaScript** with 3 clean file types.
