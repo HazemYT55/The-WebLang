@@ -63,6 +63,7 @@
     <a href="#stw">STW</a>
     <a href="#mtwc">MTWC</a>
     <a href="#v11">New in v1.1</a>
+    <a href="#ten">All 10 languages</a>
     <a href="#together">How they connect</a>
     <a href="#examples">Examples</a>
     <a href="#cheat">Cheat Sheet</a>
@@ -454,7 +455,53 @@ use Card { prop image "b.jpg" prop title "App Two" p "Extra text goes in the slo
 mus: song.mp3 [loop] [volume:0.5]</pre>
 
     <h3>Open files in the IDE</h3>
-    <p class="ds">Press <b>Open files…</b> or drag <code>.btw</code>, <code>.stw</code> and <code>.mtwc</code> files onto the IDE. Each file goes to the right editor, the page runs, and with <b>Auto-convert</b> on the HTML, CSS and JS files are created for you to download.</p>
+    <p class="ds">Press <b>Open files…</b> or drag files for any of the 10 languages (plus .md, .txt, .glb, images and media) onto the IDE. Each file goes to the right editor, the page runs, and with <b>Auto-convert</b> on the HTML, CSS and JS files are created for you to download.</p>
+
+    <h2 id="ten">🧩 The other 7 languages in the IDE</h2>
+    <p class="ds">Each has its own tab with an example (press <b>Load example</b>). Converted sites export <code>index.html</code>, <code>style.css</code>, <code>script.js</code>, plus <code>image.svg</code> when you use IFW.</p>
+
+    <h3>IOTW · data.iotw</h3>
+    <pre>(Name : [act:S] , Age : 13)
+(profile : (Role : "Dev"))</pre>
+    <p class="ds">Builds <code>window.DATA</code>. Write <code>{Name}</code> or <code>{profile.Role}</code> in BTW text and it fills in when the page runs. <code>[act:S]</code> runs <code>action(S)</code> from MTWC and stores its <code>S.Name</code> value. An action may have no event line.</p>
+
+    <h3>MOTW · server.motw</h3>
+    <pre>make it (PHP)
+make var(1) = show_img "a.png"
+make var(2) = show_text "Welcome"</pre>
+    <p class="ds">No PHP runs in the browser. The IDE turns each <code>make var(N)</code> into BTW lines at convert time, ordered by N (a repeated N: the later one wins).</p>
+
+    <h3>IFW · image.ifw</h3>
+    <pre>circle: r=40 c=blue
+text: "W" x=35 y=50 c=white</pre>
+    <p class="ds">Draws an inline SVG and exports <code>image.svg</code>. Shapes without x and y sit left to right, bottom aligned. Use <code>img: image.ifw</code> in BTW to place it, otherwise it goes at the end of the page.</p>
+
+    <h3>SMDF · docs.smdf</h3>
+    <pre>theme dark
+show readme.md [toc] [code] [tables] [links]</pre>
+    <p class="ds">Shows a Markdown file in the page. There is no disk, so open the .md file with <b>Open files…</b> (or use the sample readme.md in the <b>files</b> tab). Each option turns that feature on.</p>
+
+    <h3>STF · viewer.stf</h3>
+    <pre>font mono
+size 14px
+show notes.txt [wrap] [scroll] [linenums]</pre>
+    <p class="ds">Shows a text file with font, size, color, bg, maxw, wrap, scroll and line numbers. Same file rules as SMDF.</p>
+
+    <h3>3DS · scene.3ds</h3>
+    <pre>scene {
+  plane: w=500 h=500 c=gray
+  cube: size=100 c=red [spin]
+  light: sun
+  camera: orbit
+}</pre>
+    <p class="ds">Built with three.js loaded from the internet, so it needs a connection and WebGL. Models (.glb / .gltf) come from the files list. A scene without a light or camera gives a warning.</p>
+
+    <h3>SSITW · deck.ssitw</h3>
+    <pre>slide 1 {
+  title "Welcome"
+  text "My presentation"
+}</pre>
+    <p class="ds">Makes a slide deck with Prev / Next buttons and arrow keys. Style slides in STW with <code>slide id = 1 ([bc:red])</code>.</p>
 
     <h2 id="together">🔗 How the 3 Files Work Together</h2>
     <p class="ds">Order matters:</p>
@@ -574,7 +621,7 @@ STYLE:    theme dark / light · class add / remove</pre>
       <tr><td>Linking a page as <code>.html</code> from BTW</td><td>Write <code>a "Next" -&gt; page2.btw</code>, the converter makes it <code>page2.html</code></td></tr>
     </table>
 
-    <div class="note"><b>Note about the IDE:</b> the <a href="IDE.html" style="color:var(--acc2);font-weight:700">WebLang IDE</a> runs a working subset of the language in your browser: BTW structure and text tags, the STW translation table, and MTWC basics (actions, events, if / else, variables, form reading, save / load, page navigation, theme, set / hide / reveal), components, media options, and file opening with automatic conversion. Parts of the full spec such as IOTW, MOTW, IFW, SMDF, STF, 3DS and SSITW are not in the IDE yet.</div>
+    <div class="note"><b>Note about the IDE:</b> the <a href="IDE.html" style="color:var(--acc2);font-weight:700">WebLang IDE</a> now has an editor tab for all 10 languages. It runs a working subset of each one in your browser. See <a href="#ten" style="color:var(--acc2);font-weight:700">the 10 languages in the IDE</a> for what works and the limits (no real PHP, 3D needs internet, one page at a time, no autocomplete).</div>
   </div>
 </div>
 
