@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="1-weblang-logo.png" alt="WebLang logo" width="220">
+  <img src="https://github.com/HazemYT55/The-WebLang/blob/main/1-weblang-logo.png" alt="WebLang logo" width="220">
 </p>
 
 # 🌐 WebLang — The Complete Web Ecosystem
