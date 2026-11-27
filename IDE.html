@@ -1164,7 +1164,7 @@ function assemble(p, exportMode){
   var title = esc(p.title || 'WebLang page'), cls = p.theme === 'dark' ? ' class="dark"' : '';
   if(exportMode){
     return {html: '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + title +
-      '</title><link rel="stylesheet" href="style.css"></head><body' + cls + '>\n' + p.body + '\n<script src="script.js" defer>' + SC_END + mod + '\n</body></html>',
+      '</title></head><body' + cls + '>\n' + p.body + '\n<script src="script.js" defer>' + SC_END + mod + '\n</body></html>',
       css: p.css + '\n', js: js + '\n'};
   }
   return {html: '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + title + '</title><style>' + p.css + '</style></head><body' + cls + '>\n' + p.body +
